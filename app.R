@@ -24,7 +24,7 @@ server <- shinyServer(function(input, output, session) {
   
   ess_data <- as.data.frame(read_spss("ess_data.sav"))
   
-  median_data <- as.data.frame(t(data.frame(rep(0,23),rep(10,23))))
+  median_data <- as.data.frame(t(data.frame(rep(10,23),rep(0,23))))
   
   colnames(median_data) <- c("agea", "gndr", "eisced",
     "ppltrst", "pplfair", "pplhlp",
@@ -37,11 +37,11 @@ server <- shinyServer(function(input, output, session) {
     "stfeco", "stfedu", "stfhlth",
     "lrscale")
   
-  rownames(median_data) <- c("Min","Max")
+  rownames(median_data) <- c("Max","Min")
   
   median_data["EU_median",] <- rep(0,23)
   median_data["HU_median",] <- rep(0,23)
-  median_data["Survey_Participant",] <- runif(23, 2,8) %>% round(0)
+  median_data["Survey_Participant",] <- runif(23, 1,4) %>% round(0)
   
   variables <- c("agea", "gndr", "eisced", "ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", 
     "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", 
@@ -54,31 +54,16 @@ server <- shinyServer(function(input, output, session) {
   
   median_data <- select(median_data, -c(agea, gndr, eisced))
   
-  removed <- c()
+  median_data$imsmetn <- 5 - median_data$imsmetn
+  median_data$imdfetn <- 5 - median_data$imdfetn
+  median_data$impcntr <- 5 - median_data$impcntr
   
-  # {dummy_data <- data.frame(list("ppltrst" = round(runif(5, 0, 10),0),
-  #                               "pplfair" = round(runif(5, 0, 10),0),
-  #                               "pplhlp" = round(runif(5, 0, 10),0),
-  #                               "trstprl" = round(runif(5, 0, 10),0),
-  #                               "trstep" = round(runif(5, 0, 10),0),
-  #                               "trstlgl" = round(runif(5, 0, 10),0),
-  #                               "imbgeco" = round(runif(5, 0, 10),0),
-  #                               "imueclt" = round(runif(5, 0, 10),0),
-  #                               "imwbcnt" = round(runif(5, 0, 10),0),
-  #                               "impcntr" = round(runif(5, 0, 10),0),
-  #                               "imsmetn" = round(runif(5, 0, 10),0),
-  #                               "imdfetn" = round(runif(5, 0, 10),0),
-  #                               "happy" = round(runif(5, 0, 10),0),
-  #                               "stflife" = round(runif(5, 0, 10),0),
-  #                               "frprtpl" = round(runif(5, 0, 10),0),
-  #                               "stfdem" = round(runif(5, 0, 10),0),
-  #                               "stfeco" = round(runif(5, 0, 10),0),
-  #                               "stfedu" = round(runif(5, 0, 10),0),
-  #                               "stfhlth" = round(runif(5, 0, 10),0),
-  #                               "lrscale" = round(runif(5, 0, 10),0)),
-  #                          row.names = c("Min", "Max", "EU_median", "Hungary_median", "Survey_Participant"))
-  # dummy_data[1,] <- 0
-  # dummy_data[2,] <- 10}
+  median_data$frprtpl[1:2] <- c(5,1)
+  median_data$imsmetn[1:2] <- c(4,1)
+  median_data$imdfetn[1:2] <- c(4,1)
+  median_data$impcntr[1:2] <- c(4,1)
+  
+  removed <- c("Survey_Participant")
   
   #Clean data
   
@@ -91,10 +76,10 @@ server <- shinyServer(function(input, output, session) {
     colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
     
     radarchart(df = median_data[which(rownames(median_data) %nin% removed),], 
-               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 4, caxislabels = seq(0,10,1), cglwd=1, seg = 10,
+               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), cglwd=1, seg = 10,
                pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
     
-    legend("topright", legend = rownames(median_data[c(3,4,5),]), bty = "o", fill=colors_in, cex = 0.9)
+    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed,"Min","Max")),]), bty = "o", fill=colors_in, cex = 0.9)
   })
 
   #observeEvent({input$redraw_radar})
@@ -128,7 +113,7 @@ server <- shinyServer(function(input, output, session) {
       colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
       
       radarchart(df = median_data[which(rownames(median_data) %nin% removed),], 
-                 cglcol="grey", cglty=1, axislabcol="grey20", axistype = 4, caxislabels = seq(0,10,1), cglwd=1, seg = 10,
+                 cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), cglwd=1, seg = 10,
                  pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
       
       legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed,"Min","Max")),]), bty = "o", fill=colors_in, cex = 0.9)
@@ -147,17 +132,42 @@ ui <- shinyUI(
     theme = shinythemes::shinytheme("sandstone"),
     tabPanel("Radar charts",
       fluidRow(
-        column(2, align = "center",
-          checkboxInput("EU_check", label = "Hide EU median"),
-          checkboxInput("HU_check", label = "Hide HU median"),
-          checkboxInput("own_check", label = "Hide own score"),
-          actionButton("redraw_radar", "Redraw plot")
-        ),
-        column(8, align = "center",
-          h2("One radar chart"),
-          plotOutput("radar_all", height = 800),
+        column(12, align = "center",
+          h1("Overview of all variables"),
+          br(),
           hr()
         )
+      ),
+      fluidRow(
+        column(1, align = "center",
+          
+        ),
+        column(8, align = "center",
+          plotOutput("radar_all", height = 800),
+        ),
+        column(2, align = "center",
+          selectInput("cntry", "Country (not implemented)",
+                      choices = list("Hungary" = "HU", "United Kingdom" = "UK"),
+                      selected = "Hungary"),
+          checkboxInput("EU_check", label = "Hide EU median"),
+          checkboxInput("HU_check", label = "Hide HU median"),
+          checkboxInput("own_check", label = "Hide own score", value = TRUE),
+          actionButton("redraw_radar", "Redraw plot"),
+          hr(),
+          br(),
+          p("On the radat plot to the left you can see the weighted median values displayed for all 
+            variables measured. A high value in a variable means the participants agreed to a greater extent, 
+            so a high trust score means the respondents are more trusting, and a high immigration score shows 
+            greater tolerance of immigrants.", style = "align:justified"),
+          br(),
+          helpText("Note that most variables are scaled 0 to 10, except the four 
+            following: IMSMETN, IMDFETN, IMPCNTR scale 1 to 4, and FRPRTPL scales 1 to 5. Scores for these 
+            variables have been adjusted to fit on the 0 to 10 scale.")
+        ),
+        column(1)
+      ),
+      fluidRow(
+        hr()
       )
     ),
     tabPanel("Other Data Visualisation")
