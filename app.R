@@ -9,6 +9,7 @@ library(spatstat)
 library(ggplot2)
 
 
+
 ##########
 # SERVER #
 ##########
@@ -20,7 +21,7 @@ server <- shinyServer(function(input, output, session) {
   #########################
   
   #Import data
-  `%nin%` <- Negate(`%in%`)
+  {`%nin%` <- Negate(`%in%`)
   
   ess_data <- as.data.frame(read_spss("ess_data.sav"))
   
@@ -63,7 +64,47 @@ server <- shinyServer(function(input, output, session) {
   median_data$imdfetn[1:2] <- c(4,1)
   median_data$impcntr[1:2] <- c(4,1)
   
-  removed <- c("Survey_Participant")
+  removed <- c("Survey_Participant")}
+  
+  removed_trust <- c()
+  
+  indicators <- data.frame(list("Individual_Trust" = c(0,0,0), 
+                                "Institutional_Trust" = c(0,0,0),
+                                "Immigration_perception" = c(0,0,0),
+                                "Immigration_rejection" = c(0,0,0),
+                                "Immigration_racial" = c(0,0,0),
+                                "Subjective_Satisfaction" = c(0,0,0),
+                                "Political_Satisfaction" = c(0,0,0),
+                                "Institutional_Satisfaction" = c(0,0,0)),
+                           row.names = c("EU", "HU", "Participant"))
+  
+
+
+  indicators["EU",1] <- mean(median_data["EU_median",]$ppltrst, 
+                             median_data["EU_median",]$pplfair, 
+                             median_data["EU_median",]$pplhlp)
+  
+  indicators["EU",2] <- mean(median_data["EU_median",]$trstprl, 
+                             median_data["EU_median",]$trstep, 
+                             median_data["EU_median",]$trstlgl)
+  
+  indicators["HU",1] <- mean(median_data["HU_median",]$ppltrst, 
+                             median_data["HU_median",]$pplfair, 
+                             median_data["HU_median",]$pplhlp)
+  
+  indicators["HU",2] <- mean(median_data["HU_median",]$trstprl, 
+                             median_data["HU_median",]$trstep, 
+                             median_data["HU_median",]$trstlgl)
+  
+  indicators["Participant",1] <-mean(median_data["Survey_Participant",]$ppltrst, 
+                                     median_data["Survey_Participant",]$pplfair, 
+                                     median_data["Survey_Participant",]$pplhlp)
+  
+  indicators["Participant",2] <-mean(median_data["Survey_Participant",]$trstprl, 
+                                     median_data["Survey_Participant",]$trstep, 
+                                     median_data["Survey_Participant",]$trstlgl)
+  
+  indicators$cntry <- c("EU","HU","Participant")
   
   #Clean data
   
@@ -81,11 +122,39 @@ server <- shinyServer(function(input, output, session) {
     
     legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed,"Min","Max")),]), bty = "o", fill=colors_in, cex = 0.9)
   })
-
-  #observeEvent({input$redraw_radar})
   
+  output$radar_trust <- renderPlot({
+    colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+    colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+    
+    radarchart(df = median_data %>% select(ppltrst,pplfair,pplhlp,trstprl,trstep,trstlgl), 
+               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
+               pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+    
+    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max")),]), bty = "o", fill=colors_in, cex = 0.9)
+  })
 
-
+  output$trust_indicators_individual <- renderPlot({
+    ggplot(indicators) +
+      geom_col(mapping = aes(y = Individual_Trust, x = cntry), 
+               fill = list("EU" = rgb(0.2,0.5,0.5,0.9), 
+                           "HU" = rgb(0.8,0.2,0.5,0.9), 
+                           "Participant" = rgb(0.7,0.5,0.1,0.9))) +
+      theme(panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank()) +
+      scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+  })
+  
+  output$trust_indicators_institutional <- renderPlot({
+    ggplot(indicators) +
+      geom_col(mapping = aes(y = Institutional_Trust, x = cntry), 
+               fill =  list("EU" = rgb(0.2,0.5,0.5,0.9), 
+                            "HU" = rgb(0.8,0.2,0.5,0.9), 
+                            "Participant" = rgb(0.7,0.5,0.1,0.9))) +
+      theme(panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank()) +
+      scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+  })
   
   observeEvent(input$redraw_radar, {
     
@@ -131,44 +200,87 @@ ui <- shinyUI(
   navbarPage("MOOC App", collapsible = TRUE,
     theme = shinythemes::shinytheme("sandstone"),
     tabPanel("Radar charts",
-      fluidRow(
-        column(12, align = "center",
-          h1("Overview of all variables"),
-          br(),
+      {fluidPage(
+        fluidRow(
+          column(12, align = "center",
+            h1("Overview of all variables"),
+            br(),
+            br()
+          )
+        ),
+        fluidRow(
+          column(1, align = "center",
+            
+          ),
+          column(8, align = "center",
+            plotOutput("radar_all", height = 800),
+          ),
+          column(2, align = "center",
+            selectInput("cntry", "Country (not implemented)",
+                        choices = list("Hungary" = "HU", "United Kingdom" = "UK"),
+                        selected = "Hungary"),
+            checkboxInput("EU_check", label = "Hide EU median"),
+            checkboxInput("HU_check", label = "Hide HU median"),
+            checkboxInput("own_check", label = "Hide own score", value = TRUE),
+            actionButton("redraw_radar", "Update plot"),
+            hr(),
+            br(),
+            p("On the radat plot to the left you can see the weighted median values displayed for all 
+              variables measured. A high value in a variable means the participants agreed to a greater extent, 
+              so a high trust score means the respondents are more trusting, and a high immigration score shows 
+              greater tolerance of immigrants.", style = "align:justified"),
+            br(),
+            helpText("Note that most variables are scaled 0 to 10, except the four 
+              following: IMSMETN, IMDFETN, IMPCNTR scale 1 to 4, and FRPRTPL scales 1 to 5. Scores for these 
+              variables have been adjusted to fit on the 0 to 10 scale.")
+          ),
+          column(1)
+        ),
+        fluidRow(
           hr()
         )
-      ),
-      fluidRow(
-        column(1, align = "center",
-          
+      )}, # Overview
+      {fluidPage(
+        fluidRow(
+          column(12, align = "center",
+            h1("Trust"),
+            br(),
+            br()
+          )
         ),
-        column(8, align = "center",
-          plotOutput("radar_all", height = 800),
+        fluidRow(
+          column(10, offset = 1,
+            p("Two types of trust indicators were calculated from the variables: Individual and Institutional
+              Trust. People with a high Individual Trust indicator are more likely to trust other people, 
+              and people with a high Institutional Trust indicator are more likely to trust the institutions 
+              that govern them.")
+          )
         ),
-        column(2, align = "center",
-          selectInput("cntry", "Country (not implemented)",
-                      choices = list("Hungary" = "HU", "United Kingdom" = "UK"),
-                      selected = "Hungary"),
-          checkboxInput("EU_check", label = "Hide EU median"),
-          checkboxInput("HU_check", label = "Hide HU median"),
-          checkboxInput("own_check", label = "Hide own score", value = TRUE),
-          actionButton("redraw_radar", "Redraw plot"),
-          hr(),
-          br(),
-          p("On the radat plot to the left you can see the weighted median values displayed for all 
-            variables measured. A high value in a variable means the participants agreed to a greater extent, 
-            so a high trust score means the respondents are more trusting, and a high immigration score shows 
-            greater tolerance of immigrants.", style = "align:justified"),
-          br(),
-          helpText("Note that most variables are scaled 0 to 10, except the four 
-            following: IMSMETN, IMDFETN, IMPCNTR scale 1 to 4, and FRPRTPL scales 1 to 5. Scores for these 
-            variables have been adjusted to fit on the 0 to 10 scale.")
+        fluidRow(
+          column(1),
+          column(6,
+            plotOutput("radar_trust", height = 800, width = "auto")
+          ),
+          column(1,
+                 plotOutput("trust_indicators_individual", height = 800, width = 90)
+          ),
+          column(1,
+                 plotOutput("trust_indicators_institutional", height = 800, width = 90)
+          ),
+          column(2, align = "center",
+            selectInput("cntry_trust", "Country (not implemented)",
+                        choices = list("Hungary" = "HU", "United Kingdom" = "UK"),
+                        selected = "Hungary"),
+            checkboxInput("EU_check_trust", label = "Hide EU median"),
+            checkboxInput("HU_check_trust", label = "Hide HU median"),
+            checkboxInput("own_check_trust", label = "Hide own score", value = TRUE),
+            actionButton("redraw_radar", "Update plot")),
+          column(1)
         ),
-        column(1)
-      ),
-      fluidRow(
-        hr()
-      )
+        fluidRow(
+          hr()
+        )
+      )} # Trust
     ),
     tabPanel("Other Data Visualisation")
   )
