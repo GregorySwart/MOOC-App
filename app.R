@@ -8,8 +8,6 @@ library(rsconnect)
 library(spatstat)
 library(ggplot2)
 
-
-
 ##########
 # SERVER #
 ##########
@@ -24,6 +22,8 @@ server <- shinyServer(function(input, output, session) {
   {`%nin%` <- Negate(`%in%`)
   
   ess_data <- as.data.frame(read_spss("ess_data.sav"))
+  
+  countries <- ess_data$cntry %>% unique() %>% values2labels() %>% unclass()
   
   median_data <- as.data.frame(t(data.frame(rep(10,23),rep(0,23))))
   
@@ -40,17 +40,23 @@ server <- shinyServer(function(input, output, session) {
   
   rownames(median_data) <- c("Max","Min")
   
-  median_data["EU_median",] <- rep(0,23)
-  median_data["HU_median",] <- rep(0,23)
-  median_data["Survey_Participant",] <- runif(23, 1,4) %>% round(0)
+  median_data["EU",] <- rep(0,23)
+  for (i in countries){
+    median_data[i,] <- rep(0,23)
+  }
+  # median_data["HU",] <- rep(0,23)
+  median_data["PA",] <- runif(23, 1,4) %>% round(0)
   
   variables <- c("agea", "gndr", "eisced", "ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", 
     "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", 
     "stfdem","stfeco", "stfedu", "stfhlth", "lrscale")
   
   for (i in 1:23){
-    median_data["EU_median",i] <- weighted.median(unlist(ess_data[variables[i]]), ess_data$dweight)
-    median_data["HU_median",i] <- weighted.median(unlist(subset(ess_data, cntry == "HU")[variables[i]]), subset(ess_data, cntry == "HU")$dweight) %>% round(0)
+    median_data["EU",i] <- weighted.median(unlist(ess_data[variables[i]]), ess_data$dweight)
+    for (j in countries){
+      median_data[j,i] <- weighted.median(unlist(subset(ess_data, cntry == j)[variables[i]]), subset(ess_data, cntry == j)$dweight) %>% round(0)
+    }
+    median_data["HU",i] <- weighted.median(unlist(subset(ess_data, cntry == "HU")[variables[i]]), subset(ess_data, cntry == "HU")$dweight) %>% round(0)
   }
   
   median_data <- select(median_data, -c(agea, gndr, eisced))
@@ -64,7 +70,12 @@ server <- shinyServer(function(input, output, session) {
   median_data$imdfetn[1:2] <- c(4,1)
   median_data$impcntr[1:2] <- c(4,1)
   
-  removed <- c("Survey_Participant")}
+  median_data$frprtpl <- median_data$frprtpl-1
+  median_data$imsmetn <- median_data$imsmetn-1
+  median_data$imdfetn <- median_data$imdfetn-1
+  median_data$impcntr <- median_data$impcntr-1
+  
+  removed <- c("PA")}
   
   removed_trust <- c()
   
@@ -76,35 +87,48 @@ server <- shinyServer(function(input, output, session) {
                                 "Subjective_Satisfaction" = c(0,0,0),
                                 "Political_Satisfaction" = c(0,0,0),
                                 "Institutional_Satisfaction" = c(0,0,0)),
-                           row.names = c("EU", "HU", "Participant"))
+                           row.names = c("EU", "HU", "PA"))
   
+  lindicator_list <- list("Individual_Trust" = c("ppltrst", "pplfair", "pplhlp"),
+                          "Institutional_Trust" = c("trstprl", "trstep", "trstlgl"),
+                          "Immigration_Perception" = c("imbgeco", "imeuclt", "imwbcnt"),
+                          "Immigration_Rejection" = c("impcntr"),
+                          "Immigration_Racial" = c("imsmetn", "imdfetn"),
+                          "Subjective_Satisfaction" = c("happy", "stflife"),
+                          "Political_Satisfaction" = c("frprtpl", "stfdem"),
+                          "Institutional_Satisfaction" = c("stfedu", "stfeco", "stfhlth"))
 
-
-  indicators["EU",1] <- mean(median_data["EU_median",]$ppltrst, 
-                             median_data["EU_median",]$pplfair, 
-                             median_data["EU_median",]$pplhlp)
+  for (i in 1:length(row.names(indicators))){
+    
+  }
   
-  indicators["EU",2] <- mean(median_data["EU_median",]$trstprl, 
-                             median_data["EU_median",]$trstep, 
-                             median_data["EU_median",]$trstlgl)
+  indicators["EU",1] <- mean(median_data["EU",]$ppltrst, 
+                             median_data["EU",]$pplfair, 
+                             median_data["EU",]$pplhlp)
   
-  indicators["HU",1] <- mean(median_data["HU_median",]$ppltrst, 
-                             median_data["HU_median",]$pplfair, 
-                             median_data["HU_median",]$pplhlp)
+  indicators["EU",2] <- mean(median_data["EU",]$trstprl, 
+                             median_data["EU",]$trstep, 
+                             median_data["EU",]$trstlgl)
   
-  indicators["HU",2] <- mean(median_data["HU_median",]$trstprl, 
-                             median_data["HU_median",]$trstep, 
-                             median_data["HU_median",]$trstlgl)
+  indicators["HU",1] <- mean(median_data["HU",]$ppltrst, 
+                             median_data["HU",]$pplfair, 
+                             median_data["HU",]$pplhlp)
   
-  indicators["Participant",1] <-mean(median_data["Survey_Participant",]$ppltrst, 
-                                     median_data["Survey_Participant",]$pplfair, 
-                                     median_data["Survey_Participant",]$pplhlp)
+  indicators["HU",2] <- mean(median_data["HU",]$trstprl, 
+                             median_data["HU",]$trstep, 
+                             median_data["HU",]$trstlgl)
   
-  indicators["Participant",2] <-mean(median_data["Survey_Participant",]$trstprl, 
-                                     median_data["Survey_Participant",]$trstep, 
-                                     median_data["Survey_Participant",]$trstlgl)
+  indicators["PA",1] <- mean(median_data["PA",]$ppltrst, 
+                             median_data["PA",]$pplfair, 
+                             median_data["PA",]$pplhlp)
   
-  indicators$cntry <- c("EU","HU","Participant")
+  indicators["PA",2] <- mean(median_data["PA",]$trstprl, 
+                             median_data["PA",]$trstep, 
+                             median_data["PA",]$trstlgl)
+  
+  indicators$cntry <- c("EU","HU","PA")
+  
+  ready <- c("Max", "Min", "EU","HU","PA")
   
   #Clean data
   
@@ -116,22 +140,22 @@ server <- shinyServer(function(input, output, session) {
     colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
     colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
     
-    radarchart(df = median_data[which(rownames(median_data) %nin% removed),], 
+    radarchart(df = median_data[which(rownames(median_data) %nin% removed & rownames(median_data) %in% ready),], 
                cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), cglwd=1, seg = 10,
                pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
     
-    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed,"Min","Max")),]), bty = "o", fill=colors_in, cex = 0.9)
+    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
   })
   
   output$radar_trust <- renderPlot({
     colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
     colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
     
-    radarchart(df = median_data %>% select(ppltrst,pplfair,pplhlp,trstprl,trstep,trstlgl), 
+    radarchart(df = median_data[ready,] %>% select(ppltrst,pplfair,pplhlp,trstprl,trstep,trstlgl), 
                cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
                pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
     
-    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max")),]), bty = "o", fill=colors_in, cex = 0.9)
+    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
   })
 
   output$trust_indicators_individual <- renderPlot({
@@ -159,33 +183,33 @@ server <- shinyServer(function(input, output, session) {
   observeEvent(input$redraw_radar, {
     
     if (input$EU_check == T){
-      removed <- removed %>% append("EU_median")
+      removed <- removed %>% append("EU")
     }else if(input$EU_check == F){
-      removed <- removed[removed != "EU_median"]
+      removed <- removed[removed != "EU"]
     }
     
     if (input$HU_check == T){
-      removed <- removed %>% append("HU_median")
+      removed <- removed %>% append("HU")
     }else if(input$EU_check == F){
-      removed <- removed[removed != "HU_median"]
+      removed <- removed[removed != "HU"]
     }
     
     
     if (input$own_check == T){
-      removed <- removed %>% append("Survey_Participant")
+      removed <- removed %>% append("PA")
     }else if(input$own_check == F){
-      removed <- removed[removed != "Survey_Participant"]
+      removed <- removed[removed != "PA"]
     }
     
     output$radar_all <- renderPlot({
       colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
       colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
       
-      radarchart(df = median_data[which(rownames(median_data) %nin% removed),], 
+      radarchart(df = median_data[which(rownames(median_data) %nin% removed & rownames(median_data) %in% ready),], 
                  cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), cglwd=1, seg = 10,
                  pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
       
-      legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed,"Min","Max")),]), bty = "o", fill=colors_in, cex = 0.9)
+      legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
     })
   })
 
