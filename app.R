@@ -45,7 +45,7 @@ server <- shinyServer(function(input, output, session) {
     median_data[i,] <- rep(0,23)
   }
   # median_data["HU",] <- rep(0,23)
-  median_data["PA",] <- runif(23, 1,4) %>% round(0)
+  median_data["PA",] <- runif(23, 1,3) %>% round(0)
   
   variables <- c("agea", "gndr", "eisced", "ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", 
     "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", 
@@ -89,7 +89,7 @@ server <- shinyServer(function(input, output, session) {
                                 "Institutional_Satisfaction" = c(0,0,0)),
                            row.names = c("EU", "HU", "PA"))
   
-  lindicator_list <- list("Individual_Trust" = c("ppltrst", "pplfair", "pplhlp"),
+  indicator_list <- list("Individual_Trust" = c("ppltrst", "pplfair", "pplhlp"),
                           "Institutional_Trust" = c("trstprl", "trstep", "trstlgl"),
                           "Immigration_Perception" = c("imbgeco", "imeuclt", "imwbcnt"),
                           "Immigration_Rejection" = c("impcntr"),
@@ -157,7 +157,29 @@ server <- shinyServer(function(input, output, session) {
     
     legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
   })
+  
+  output$radar_satisfaction <- renderPlot({
+    colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+    colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+    
+    radarchart(df = median_data[ready,] %>% select(happy, stflife, frprtpl, stfdem, stfeco, stfedu, stfhlth), 
+               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
+               pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+    
+    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
+  })
 
+  output$radar_immigration <- renderPlot({
+    colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+    colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+    
+    radarchart(df = median_data[ready,] %>% select(imbgeco,imueclt,imwbcnt,impcntr,imsmetn,imdfetn), 
+               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
+               pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+    
+    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
+  })
+  
   output$trust_indicators_individual <- renderPlot({
     ggplot(indicators) +
       geom_col(mapping = aes(y = Individual_Trust, x = cntry), 
@@ -298,13 +320,104 @@ ui <- shinyUI(
             checkboxInput("EU_check_trust", label = "Hide EU median"),
             checkboxInput("HU_check_trust", label = "Hide HU median"),
             checkboxInput("own_check_trust", label = "Hide own score", value = TRUE),
-            actionButton("redraw_radar", "Update plot")),
+            actionButton("redraw_trust", "Update plot")),
           column(1)
         ),
         fluidRow(
           hr()
         )
-      )} # Trust
+      )}, # Trust
+      {fluidPage(
+        fluidRow(
+          column(12, align = "center",
+                 h1("Immigration"),
+                 br(),
+                 br()
+          )
+        ),
+        fluidRow(
+          column(10, offset = 1,
+                 p("Two indicators were derived from variables dealing with immigration: Immigration 
+                   Perception, and Immigration Rejection. (Immigration Racial?) Immigration Perception 
+                   refers to the percieved good or bad effects immigration has in the eyes of its 
+                   residents, calculated by taking the average of the varaibles imbgeco, imueclt, imwbcnt. 
+                   Immigration rejection refers to the proportion of people who answered \"Allow none.\" to 
+                   the question \"How many immigrants would you allow to come and live in your country from 
+                   poorer countries outside of europe?\".")
+          )
+        ),
+        fluidRow(
+          column(1),
+          column(6,
+                 plotOutput("radar_immigration", height = 800, width = "auto")
+          ),
+          column(1,
+                 plotOutput("immigration_perception", height = 800, width = 90)
+          ),
+          column(1,
+                 plotOutput("immigration_rejection", height = 800, width = 90)
+          ),
+          column(2, align = "center",
+                 selectInput("cntry_immigration", "Country (not implemented)",
+                             choices = list("Hungary" = "HU", "United Kingdom" = "UK"),
+                             selected = "Hungary"),
+                 checkboxInput("EU_check_immigration", label = "Hide EU median"),
+                 checkboxInput("HU_check_immigration", label = "Hide HU median"),
+                 checkboxInput("own_check_immigration", label = "Hide own score", value = TRUE),
+                 actionButton("redraw_immigration", "Update plot")),
+          column(1)
+        ),
+        fluidRow(
+          hr()
+        )
+      )}, # Immigration
+      {fluidPage(
+        fluidRow(
+          column(12, align = "center",
+                 h1("Satisfaction"),
+                 br(),
+                 br()
+          )
+        ),
+        fluidRow(
+          column(10, offset = 1,
+                 p("Three satisfaction indicators were derived from the data. Subjective Satisfaction 
+                   is the average value of the variables happiness and satisfaction in life. Political 
+                   Satisfaction in the average value of the variables frprtpl (Political system in country 
+                   allows all to participate freely and equally in politics) and satisfaction with how
+                   democracy works. Institutional Satisfaction is the average of the variables stfeco 
+                   (satisfaction with democracy in own country), stfedu (satistaction with education system),
+                   and atfhlth (satisfaction with healthcare system). All variables have range 0-10.")
+          )
+        ),
+        fluidRow(
+          column(1),
+          column(5,
+                 plotOutput("radar_satisfaction", height = 800, width = "auto")
+          ),
+          column(1,
+                 plotOutput("Subjective_Satisfaction", height = 800, width = 90)
+          ),
+          column(1,
+                 plotOutput("Political_Satisfaction", height = 800, width = 90)
+          ),
+          column(1,
+                 plotOutput("Institutional_Satisfaction", height = 800, width = 90)
+          ),
+          column(2, align = "center",
+                 selectInput("cntry_satisfaction", "Country (not implemented)",
+                             choices = list("Hungary" = "HU", "United Kingdom" = "UK"),
+                             selected = "Hungary"),
+                 checkboxInput("EU_check_satisfaction", label = "Hide EU median"),
+                 checkboxInput("HU_check_satisfaction", label = "Hide HU median"),
+                 checkboxInput("own_check_satisfaction", label = "Hide own score", value = TRUE),
+                 actionButton("redraw_satisfaction", "Update plot")),
+          column(1)
+        ),
+        fluidRow(
+          hr()
+        )
+      )} # Immigration
     ),
     tabPanel("Other Data Visualisation")
   )
