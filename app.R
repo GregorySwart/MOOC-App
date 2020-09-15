@@ -81,14 +81,15 @@ server <- shinyServer(function(input, output, session) {
   
   
   output$radar_all <- renderPlot({
+    
     colors_border=c(rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
     colors_in=c(rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
     
-    radarchart(df = median_data %>% subset(cntry %nin% removed | cntry == input$cntry_radar_all) %>% select(-cntry), 
+    radarchart(df = median_data %>% subset(cntry %nin% removed | cntry == "AT") %>% select(-cntry), 
                cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), cglwd=1, seg = 10,
                pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
     
-    legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == input$cntry_radar_all)), bty = "o", fill=colors_in, cex = 0.9)
+    legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == "AT")), bty = "o", fill=colors_in, cex = 0.9)
   })
   
   output$radar_trust <- renderPlot({
@@ -173,6 +174,11 @@ server <- shinyServer(function(input, output, session) {
       selected_cntry <- input$cntry_radar_all
     }
     
+    median_data["PA","ppltrst"] <- input$ppltrst
+    
+    for (i in stat_variables){
+      median_data["PA",i] <- as.numeric(input[[i]])
+    }
     
     output$radar_all <- renderPlot({
       
@@ -186,6 +192,13 @@ server <- shinyServer(function(input, output, session) {
       legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == selected_cntry)), bty = "o", fill=colors_in, cex = 0.9)
     })
   })
+  
+  observeEvent(input$submit_survey, once = TRUE, {
+    # command to add a row to database on server
+    updateActionButton(session = session,
+                       inputId = "submit_survey",
+                       label = "Thank you! Your answers have been submitted.")
+  })
 
 })
 
@@ -197,6 +210,160 @@ ui <- shinyUI(
   
   navbarPage("MOOC App", collapsible = TRUE,
     theme = shinythemes::shinytheme("sandstone"),
+    tabPanel("Survey",
+      {fluidPage(
+        fluidRow(
+          h1("Demographics", align = "center"),
+          br(),
+          br(),
+          br(),
+          column(3, offset = 1,
+            sliderInput("agea", label = "How old are you?",
+                        min = 0, max = 100, value = 0),
+          ),
+          column(8,
+            p("VARIABLE DESCRIPTION")
+          )
+        ),
+        fluidRow(
+          column(3, offset = 1,
+            selectInput("gndr", label = "Please select your gender",
+                        choices = c("Female", "Male", "Other")),
+          ),
+          column(8,
+            p("VARIABLE DESCRIPTION")
+          )
+        ),
+        fluidRow(
+          column(3, offset = 1,
+            selectInput("eisced", label = "Please select your education level",
+                        choices = c(1,2,3,4,5,6,7)
+            )
+          ),
+          column(8,
+            p("VARIABLE DESCRIPTION")
+          )
+        ),
+        fluidRow(
+          h1("Trust", align = "center"),
+          p("Variable descriptions not added yet", align = "center"),
+          column(3, offset = 1,
+            sliderInput("ppltrst", label = "Trust in people",
+              min = 0, max = 10, value = 0,
+            ),
+            
+            sliderInput("pplfair", label = "People fair",
+                        min = 0, max = 10, value = 0,
+            ),
+            
+            sliderInput("pplhlp", label = "People helpful",
+                        min = 0, max = 10, value = 0,
+            ),
+            sliderInput("trstprl", label = "Trust parliament",
+                        min = 0, max = 10, value = 0,
+            ),
+            
+            sliderInput("trstlgl", label = "Trust legal system",
+                        min = 0, max = 10, value = 0,
+            ),
+            
+            sliderInput("trstep", label = "Trust EU parliament",
+                        min = 0, max = 10, value = 0,
+            )
+          ),
+        ),
+        fluidRow(
+          h1("Immigration attitudes", align = "center"),
+          column(3, offset = 1,
+             sliderInput("imbgeco", label = "Effect on economy",
+                         min = 0, max = 10, value = 0,
+             ),
+             sliderInput("imueclt", label = "Effect on culture",
+                         min = 0, max = 10, value = 0,
+             ),
+             sliderInput("imwbcnt", label = "Effect on country as a whole",
+                         min = 0, max = 10, value = 0,
+             ),
+             selectInput("impcntr", label = "From poorer countries outside of Europe",
+                         choices = c("Allow many to come and live here (3)" = 3,
+                                     "Allow some (2)" = 2,
+                                     "Allow a few (1)" = 1,
+                                     "Allow none (0)" = 0),
+                         selected = 0,
+             ),
+             selectInput("imsmetn", label = "Immigrants of the same race",
+                         choices = c("Allow many to come and live here (3)" = 3,
+                                     "Allow some (2)" = 2,
+                                     "Allow a few (1)" = 1,
+                                     "Allow none (0)" = 0),
+                         selected = 0,
+             ),
+             selectInput("imdfetn", label = "Immigrants of a different race",
+                         choices = c("Allow many to come and live here (3)" = 3,
+                                     "Allow some (2)" = 2,
+                                     "Allow a few (1)" = 1,
+                                     "Allow none (0)" = 0),
+                         selected = 0,
+             )
+          )
+        ),
+        fluidRow(
+          h1("Satisfaction", align = "center"),
+          column(3, offset = 1,
+            sliderInput("happy", label = "General happiness",
+                       min = 0, max = 10, value = 0,
+            ),
+            
+            sliderInput("stflife", label = "Satisfaction with life in general",
+                       min = 0, max = 10, value = 0,
+            ),
+            
+            sliderInput("frprtpl", label = "Political fairness",
+                       min = 0, max = 4, value = 0,
+            ),
+            
+            sliderInput("stfdem", label = "Satisfaction with democracy",
+                       min = 0, max = 10, value = 0,
+            ),
+            
+            sliderInput("stfeco", label = "Satisfaction with economy",
+                       min = 0, max = 10, value = 0,
+            ),
+            
+            sliderInput("stfedu", label = "Satisfaction with education",
+                       min = 0, max = 10, value = 0,
+            ),
+            
+            sliderInput("stfhlth", label = "Satisfaction with healthcare",
+                        min = 0, max = 10, value = 0,
+            ),
+            hr(),
+            sliderInput("lrscale", label = "Placement on left-right scale",
+                        min = 0, max = 10, value = 0,
+            )
+          )
+        ),
+        fluidRow(align = "center",
+          actionButton("submit_survey", label = "Submit responses"),
+          br(),
+          br(),
+          br(),
+          br()
+        ),
+        fluidRow(
+          column(4, offset = 4,
+            h4("Please note", align = "center"),
+            p("To view your results in comparison to other survey participants, the EU population 
+              and various countries' populations, you will have to uncheck the \"Hide own responses\" 
+              checkbox, and update the plots in the \"Radar charts\" tab.", align = "center"),
+            br(),
+            br(),
+            br(),
+            br()
+          )
+        )
+      )} # Survey
+    ),
     tabPanel("Radar charts",
       {fluidPage(
         fluidRow(

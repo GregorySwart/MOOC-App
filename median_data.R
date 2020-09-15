@@ -17,6 +17,10 @@ variables <- c("agea", "gndr", "eisced", "ppltrst", "pplfair", "pplhlp", "trstpr
                "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", 
                "stfdem","stfeco", "stfedu", "stfhlth", "lrscale")
 
+stat_variables <- c("ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", 
+               "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", 
+               "stfdem","stfeco", "stfedu", "stfhlth", "lrscale")
+
 for (i in 1:23){
   median_data["EU",i] <- weighted.median(unlist(ess_data[variables[i]]), ess_data$dweight)
   for (j in countries){
@@ -39,5 +43,9 @@ median_data$frprtpl <- median_data$frprtpl-1
 median_data$imsmetn <- median_data$imsmetn-1
 median_data$imdfetn <- median_data$imdfetn-1
 median_data$impcntr <- median_data$impcntr-1
+
+# for (i in stat_variables){
+#   median_data["PA",i] <- input[i]
+# }
 
 median_data$cntry <- rownames(median_data)
