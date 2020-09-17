@@ -14,64 +14,21 @@ server <- shinyServer(function(input, output, session) {
   #Import data
   source("functions.R")
   
-  ess_data <- as.data.frame(read_spss("ess_data.sav"))
+  ess_data <<- as.data.frame(read_spss("ess_data.sav"))
   
-  countries <- ess_data$cntry %>% unique() %>% values2labels() %>% unclass()
+  countries <<- ess_data$cntry %>% unique() %>% values2labels() %>% unclass()
   
   source("median_data.R")
   
   removed <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
                "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
-  removed_trust <- c()
+  removed_trust <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
+                     "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
-  indicators <- data.frame(list("Individual_Trust" = c(0,0), 
-                                "Institutional_Trust" = c(0,0),
-                                "Immigration_perception" = c(0,0),
-                                "Immigration_rejection" = c(0,0),
-                                "Immigration_racial" = c(0,0),
-                                "Subjective_Satisfaction" = c(0,0),
-                                "Political_Satisfaction" = c(0,0),
-                                "Institutional_Satisfaction" = c(0,0)),
-                           row.names = c("EU", "PA"))
+  source("indicators.R")
   
-  indicator_list <- list("Individual_Trust" = c("ppltrst", "pplfair", "pplhlp"),
-                         "Institutional_Trust" = c("trstprl", "trstep", "trstlgl"),
-                         "Immigration_Perception" = c("imbgeco", "imeuclt", "imwbcnt"),
-                         "Immigration_Rejection" = c("impcntr"),
-                         "Immigration_Racial" = c("imsmetn", "imdfetn"),
-                         "Subjective_Satisfaction" = c("happy", "stflife"),
-                         "Political_Satisfaction" = c("frprtpl", "stfdem"),
-                         "Institutional_Satisfaction" = c("stfedu", "stfeco", "stfhlth"))
-
-  for (i in 1:length(countries)){
-    indicators[countries[i],1] <- mean(median_data[countries[i],]$ppltrst, 
-                                       median_data[countries[i],]$pplfair, 
-                                       median_data[countries[i],]$pplhlp)
-    indicators[countries[i],2] <- mean(median_data[countries[i],]$trstprl, 
-                                       median_data[countries[i],]$trstep, 
-                                       median_data[countries[i],]$trstlgl)
-  }
-  
-  indicators["EU",1] <- mean(median_data["EU",]$ppltrst, 
-                             median_data["EU",]$pplfair, 
-                             median_data["EU",]$pplhlp)
-  
-  indicators["EU",2] <- mean(median_data["EU",]$trstprl, 
-                             median_data["EU",]$trstep, 
-                             median_data["EU",]$trstlgl)
-  
-  indicators["PA",1] <- mean(median_data["PA",]$ppltrst, 
-                             median_data["PA",]$pplfair, 
-                             median_data["PA",]$pplhlp)
-  
-  indicators["PA",2] <- mean(median_data["PA",]$trstprl, 
-                             median_data["PA",]$trstep, 
-                             median_data["PA",]$trstlgl)
-  
-  indicators$cntry <- rownames(indicators)
-  
-  ready <- c("Max", "Min", "EU", "HU", "PA")
+  ready <- c("Max", "Min", "EU", "HU", "SU", "PA")
   
   #Clean data
   
@@ -79,6 +36,14 @@ server <- shinyServer(function(input, output, session) {
   # Reactives #
   #############
   
+  {observeEvent(input$submit_survey, once = TRUE, {
+    # command to add a row to database on server
+    updateActionButton(session = session,
+                       inputId = "submit_survey",
+                       label = "Thank you! Your answers have been submitted.")
+  })} # Survey
+  
+  {# source("server_sections/overview.R")
   
   output$radar_all <- renderPlot({
     
@@ -90,62 +55,6 @@ server <- shinyServer(function(input, output, session) {
                pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
     
     legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == "AT")), bty = "o", fill=colors_in, cex = 0.9)
-  })
-  
-  output$radar_trust <- renderPlot({
-    colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
-    colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
-    
-    radarchart(df = median_data[ready,] %>% select(ppltrst,pplfair,pplhlp,trstprl,trstep,trstlgl), 
-               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
-               pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
-    
-    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
-  })
-  
-  output$radar_satisfaction <- renderPlot({
-    colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
-    colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
-    
-    radarchart(df = median_data[ready,] %>% select(happy, stflife, frprtpl, stfdem, stfeco, stfedu, stfhlth), 
-               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
-               pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
-    
-    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
-  })
-
-  output$radar_immigration <- renderPlot({
-    colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
-    colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
-    
-    radarchart(df = median_data[ready,] %>% select(imbgeco,imueclt,imwbcnt,impcntr,imsmetn,imdfetn), 
-               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
-               pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
-    
-    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
-  })
-  
-  output$trust_indicators_individual <- renderPlot({
-    ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-      geom_col(mapping = aes(y = Individual_Trust, x = cntry), 
-               fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-                           "PA" = rgb(0.7,0.5,0.1,0.9),
-                           "HU" = rgb(0.8,0.2,0.5,0.9))
-               ) +
-      theme(panel.grid.major.x = element_blank(),
-            panel.grid.minor.x = element_blank()) +
-      scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-  })
-  
-  output$trust_indicators_institutional <- renderPlot({
-    ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-      geom_col(mapping = aes(y = Institutional_Trust, x = cntry), 
-               fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-                            "PA" = rgb(0.7,0.5,0.1,0.9),
-                            "HU" = rgb(0.8,0.2,0.5,0.9))) +
-      theme(panel.grid.major.x = element_blank(),
-            panel.grid.minor.x = element_blank()) +
-      scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
   })
   
   observeEvent(input$redraw_radar, {
@@ -189,13 +98,105 @@ server <- shinyServer(function(input, output, session) {
       
       legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == selected_cntry)), bty = "o", fill=colors_in, cex = 0.9)
     })
+  })} # Overview
+  
+  output$radar_trust <- renderPlot({
+    colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+    colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+    
+    radarchart(df = median_data %>% subset(cntry %nin% removed_trust | cntry == "AT") %>% select(-cntry) %>% select(pplfair,pplhlp,trstprl,trstep,trstlgl,ppltrst), 
+               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
+               pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+    
+    legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed_trust,"Max","Min") | cntry == "AT")), bty = "o", fill=colors_in, cex = 0.9)
   })
   
-  observeEvent(input$submit_survey, once = TRUE, {
-    # command to add a row to database on server
-    updateActionButton(session = session,
-                       inputId = "submit_survey",
-                       label = "Thank you! Your answers have been submitted.")
+  observeEvent(input$redraw_trust, {
+    
+    if (input$EU_check_trust == T){
+      removed_trust <- removed_trust %>% append("EU")
+    }else if(input$EU_check == F){
+      removed_trust <- removed_trust[removed_trust != "EU"]
+    }
+    
+    if (input$SU_check_trust == T){
+      removed_trust <- removed_trust %>% append("SU")
+    }else if(input$EU_check == F){
+      removed_trust <- removed_trust[removed_trust != "SU"]
+    }
+    
+    if (input$own_check_trust == T){
+      removed_trust <- removed_trust %>% append("PA")
+    }else if(input$own_check_trust == F){
+      removed_trust <- removed_trust[removed_trust != "PA"]
+    }
+    
+    if (input$cntry_check_trust == T){
+      selected_cntry_trust <- NA
+    }else if(input$cntry_check == F){
+      selected_cntry_trust <- input$cntry_trust
+    }
+    
+    for (i in stat_variables){
+      median_data["PA",i] <- as.numeric(input[[i]])
+    }
+    
+    output$radar_trust <- renderPlot({
+      colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+      colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+      
+      radarchart(df = median_data %>% subset(cntry %nin% removed_trust | cntry == selected_cntry_trust) %>% select(-cntry) %>% select(pplfair,pplhlp,trstprl,trstep,trstlgl,ppltrst), 
+                 cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
+                 pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+      
+      legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed_trust,"Max","Min") | cntry == selected_cntry_trust)), bty = "o", fill=colors_in, cex = 0.9)
+    })
+  
+  })
+    
+  output$trust_indicators_individual <- renderPlot({
+    ggplot(indicators[which(rownames(indicators) %in% ready),]) +
+      geom_col(mapping = aes(y = Individual_Trust, x = cntry), 
+               fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
+                           "PA" = rgb(0.7,0.5,0.1,0.9),
+                           "HU" = rgb(0.8,0.2,0.5,0.9))
+      ) +
+      theme(panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank()) +
+      scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+  })
+  
+  output$trust_indicators_institutional <- renderPlot({
+    ggplot(indicators[which(rownames(indicators) %in% ready),]) +
+      geom_col(mapping = aes(y = Institutional_Trust, x = cntry), 
+               fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
+                            "PA" = rgb(0.7,0.5,0.1,0.9),
+                            "HU" = rgb(0.8,0.2,0.5,0.9))) +
+      theme(panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank()) +
+      scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+  })
+  
+  output$radar_satisfaction <- renderPlot({
+    colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+    colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+    
+    radarchart(df = median_data[ready,] %>% select(happy, stflife, frprtpl, stfdem, stfeco, stfedu, stfhlth), 
+               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
+               pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+    
+    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
+  })
+
+  output$radar_immigration <- renderPlot({
+    colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+    colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+    
+    radarchart(df = median_data[ready,] %>% select(imbgeco,imueclt,imwbcnt,impcntr,imsmetn,imdfetn), 
+               cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
+               pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+    
+    legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
   })
 
 })
@@ -458,11 +459,30 @@ ui <- shinyUI(
                  plotOutput("trust_indicators_institutional", height = 800, width = 90)
           ),
           column(2, align = "center",
-            selectInput("cntry_trust", "Country (not implemented)",
-                        choices = list("Hungary" = "HU", "United Kingdom" = "UK"),
-                        selected = "Hungary"),
+            selectInput("cntry_trust", "Select country",
+                        choices = list("Austria (AT)" = "AT",
+                                       "Belgium (BE)" = "BE", 
+                                       "Bulgaria (BG)" = "BG",
+                                       "Switzerland (CH)" = "CH",
+                                       "Cyprus (CY)" = "CY",
+                                       "Czechia (CZ)"= "CZ",
+                                       "Germany (DE)" = "DE",
+                                       "Estonia (EE)" = "EE",
+                                       "Finland (FI)" = "FI",
+                                       "France (FR)" = "FR",
+                                       "United Kingdom (GB)" = "GB",
+                                       "Hungary (HU)" = "HU",
+                                       "Ireland (IE)" = "IE",
+                                       "Italy (IT)" = "IT",
+                                       "Netherlands (NL)" = "NL",
+                                       "Norway (NO)" = "NO",
+                                       "Poland (PL)" = "PL",
+                                       "Serbia (RS)" = "RS",
+                                       "Slovenia (SI)" = "SI"),
+                        selected = "AT"),
             checkboxInput("EU_check_trust", label = "Hide EU median"),
-            checkboxInput("HU_check_trust", label = "Hide HU median"),
+            checkboxInput("cntry_check_trust", label = "Hide country median"),
+            checkboxInput("SU_check_trust", label = "Hide SU median"),
             checkboxInput("own_check_trust", label = "Hide own score", value = TRUE),
             actionButton("redraw_trust", "Update plot")),
           column(1)
