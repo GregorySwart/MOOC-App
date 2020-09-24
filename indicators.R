@@ -42,4 +42,14 @@ indicators["PA",2] <- mean(median_data["PA",]$trstprl,
                            median_data["PA",]$trstep, 
                            median_data["PA",]$trstlgl)
 
+indicators["SU",1] <- mean(median_data["SU",]$ppltrst, 
+                           median_data["SU",]$pplfair, 
+                           median_data["SU",]$pplhlp)
+
+indicators["SU",2] <- mean(median_data["SU",]$trstprl, 
+                           median_data["SU",]$trstep, 
+                           median_data["SU",]$trstlgl)
+
+
+
 indicators$cntry <- rownames(indicators)
