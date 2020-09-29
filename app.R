@@ -26,6 +26,12 @@ server <- shinyServer(function(input, output, session) {
   removed_trust <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
                      "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
+  removed_immigration <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
+                     "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
+  
+  removed_satisfaction <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
+                     "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
+  
   source("indicators.R")
   
   ready <- c("Max", "Min", "EU", "HU", "SU", "PA")
@@ -116,13 +122,13 @@ server <- shinyServer(function(input, output, session) {
     
     if (input$EU_check_trust == T){
       removed_trust <- removed_trust %>% append("EU")
-    }else if(input$EU_check == F){
+    }else if(input$EU_check_trust == F){
       removed_trust <- removed_trust[removed_trust != "EU"]
     }
     
     if (input$SU_check_trust == T){
       removed_trust <- removed_trust %>% append("SU")
-    }else if(input$EU_check == F){
+    }else if(input$SU_check_trust == F){
       removed_trust <- removed_trust[removed_trust != "SU"]
     }
     
@@ -134,7 +140,7 @@ server <- shinyServer(function(input, output, session) {
     
     if (input$cntry_check_trust == T){
       selected_cntry_trust <- NA
-    }else if(input$cntry_check == F){
+    }else if(input$cntry_check_trust == F){
       selected_cntry_trust <- input$cntry_trust
     }
     
@@ -152,6 +158,31 @@ server <- shinyServer(function(input, output, session) {
       
       legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed_trust,"Max","Min") | cntry == selected_cntry_trust)), bty = "o", fill=colors_in, cex = 0.9)
     })
+    
+    output$trust_indicators_individual <- renderPlot({
+      ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_trust)) +
+        geom_col(mapping = aes(y = Individual_Trust, x = cntry), 
+                 fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
+                             "PA" = rgb(0.7,0.5,0.1,0.9),
+                             "CO" = rgb(0.8,0.2,0.5,0.9),
+                             "SU" = rgb(0.4,0.7,0.9,0.9))
+        ) +
+        theme(panel.grid.major.x = element_blank(),
+              panel.grid.minor.x = element_blank()) +
+        scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+    })
+    
+    output$trust_indicators_institutional <- renderPlot({
+      ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_trust)) +
+        geom_col(mapping = aes(y = Institutional_Trust, x = cntry), 
+                 fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
+                              "PA" = rgb(0.7,0.5,0.1,0.9),
+                              "CO" = rgb(0.8,0.2,0.5,0.9),
+                              "SU" = rgb(0.4,0.7,0.9,0.9))) +
+        theme(panel.grid.major.x = element_blank(),
+              panel.grid.minor.x = element_blank()) +
+        scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+    })
   
   })
     
@@ -168,6 +199,8 @@ server <- shinyServer(function(input, output, session) {
       scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
   })
   
+  
+  
   output$trust_indicators_institutional <- renderPlot({
     ggplot(indicators[which(rownames(indicators) %in% ready),]) +
       geom_col(mapping = aes(y = Institutional_Trust, x = cntry), 
@@ -181,6 +214,8 @@ server <- shinyServer(function(input, output, session) {
   })
   } # Trust
   
+  
+  
   output$radar_satisfaction <- renderPlot({
     colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
     colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
@@ -191,6 +226,51 @@ server <- shinyServer(function(input, output, session) {
     
     legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
   })
+  
+  # observeEvent(input$redraw_satisfaction, {
+  #   
+  #   if (input$EU_check_satisfaction == T){
+  #     removed_satisfaction <- removed_satisfaction %>% append("EU")
+  #   }else if(input$EU_check_satisfaction == F){
+  #     removed_satisfaction <- removed_satisfaction[removed_satisfaction != "EU"]
+  #   }
+  #   
+  #   if (input$SU_check_satisfaction == T){
+  #     removed_satisfaction <- removed_satisfaction %>% append("SU")
+  #   }else if(input$SU_check_satisfaction == F){
+  #     removed_satisfaction <- removed_satisfaction[removed_satisfaction != "SU"]
+  #   }
+  #   
+  #   if (input$own_check_satisfaction == T){
+  #     removed_satisfaction <- removed_satisfaction %>% append("PA")
+  #   }else if(input$own_check_satisfaction == F){
+  #     removed_satisfaction <- removed_satisfaction[removed_satisfaction != "PA"]
+  #   }
+  #   
+  #   if (input$cntry_check_satisfaction == T){
+  #     selected_cntry_satisfaction <- NA
+  #   }else if(input$cntry_check_satisfaction == F){
+  #     selected_cntry_satisfaction <- input$cntry_satisfaction
+  #   }
+  #   
+  #   for (i in stat_variables){
+  #     median_data["PA",i] <- as.numeric(input[[i]])
+  #   }
+  #   
+  #   output$radar_trust <- renderPlot({
+  #     colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+  #     colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+  #     
+  #   radarchart(df = median_data %>% subset(cntry %nin% removed_satisfaction | cntry == selected_cntry_satisfaction) %>% select(-cntry) %>% select(imbgeco,imueclt,imwbcnt,impcntr,imdfetn,imsmetn), 
+  #                cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
+  #                pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+  #     
+  #     legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed_satisfaction,"Max","Min") | cntry == selected_cntry_satisfaction)), bty = "o", fill=colors_in, cex = 0.9)
+  #   })
+  # })
+  
+  
+  
 
   output$radar_immigration <- renderPlot({
     colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
@@ -245,37 +325,37 @@ ui <- shinyUI(
           br(),
           br(),
           br(),
-          ess_selector(ID = "ppltrst", label = "Trust in people",
+          ess_selector(ID = "ppltrst", label = "1. Trust in people",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "Generally speaking, would you say that most people can be trusted, or that you can't 
                             be too careful in dealing with people? Please tell us on a score of 0 to 10, where 0 
                             means you can't be too careful and 10 means that most people can be trusted."),
-          ess_selector(ID = "pplfair", label = "Fairness of people",
+          ess_selector(ID = "pplfair", label = "2. Fairness of people",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "Do you think that most people would try to take advantage of you if they got the 
                              chance, or would they try to be fair? Here 0 means people would try to take advantage of 
                              you and 10 means most people try to be fair."),
-          ess_selector(ID = "pplhlp", label = "Helpfulness of people",
+          ess_selector(ID = "pplhlp", label = "3. Helpfulness of people",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Select...",
                      text = "Would you say that most of the time people try to be helpful or that they are 
                              mostly looking out for themselves? Here 0 means most people are just looking 
                              out for themselves, while 10 means they are mostly helpful."),
-          ess_selector(ID = "trstprl", label = "Trust in parliament",
+          ess_selector(ID = "trstprl", label = "4. Trust in parliament",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Select...",
                      text = "Please tell us on a score of 0-10 how much you personally trust 
                              your country's parliament. 0 means you do not trust the institution at all, and 10 
                              means you have complete trust."),
-          ess_selector(ID = "trstlgl", label = "Trust in legal system",
+          ess_selector(ID = "trstlgl", label = "5. Trust in legal system",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Select...",
                      text = "Please tell us on a score of 0-10 how much you personally trust 
                      your country's legal system. 0 means you do not trust the institution at all, and 10 
                      means you have complete trust."),
-          ess_selector(ID = "trstep", label = "Trust in European Parliament",
+          ess_selector(ID = "trstep", label = "6. Trust in European Parliament",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Select...",
                      text = "Please tell us on a score of 0-10 how much you personally trust 
@@ -288,26 +368,26 @@ ui <- shinyUI(
           br(),
           br(),
           
-          ess_selector(ID = "imbgeco", label = "Effect on economy",
+          ess_selector(ID = "imbgeco", label = "7. Effect on economy",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "Would you say it is generally bad or good for your country's economy that 
                      people come to live here from other countries? (0 = bad for the economy, 10 = good 
                      for the economy)"),
-          ess_selector(ID = "imueclt", label = "Effect on culture",
+          ess_selector(ID = "imueclt", label = "8.Effect on culture",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "Would you say that your country's cultural life is generally undermined or 
                      enriched by people coming to live here from other countries? (0 = cultural life 
                      undermined, 10 = cultural life enriched)"),
-          ess_selector(ID = "imwbcnt", label = "Effect on country as a whole",
+          ess_selector(ID = "imwbcnt", label = "9. Effect on country as a whole",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "Is your country made a worse or a better place to live by people coming to 
                      live here from other countries? (0 = Worse place to live, 10 = Better place to live)"),
         
         ess_selector(ID = "impcntr",
-                     label = "From poorer countries outside of Europe",
+                     label = "10. From poorer countries outside of Europe",
                      choices = c("Please select..." = NA,
                                   "Allow many to come and live here (3)" = 3,
                                  "Allow some (2)" = 2,
@@ -317,7 +397,7 @@ ui <- shinyUI(
                    outside of Europe to come and live here?",
                      selected = "Please Select"),
         ess_selector(ID = "imsmetn",
-                     label = "Immigrants of the same race",
+                     label = "11. Immigrants of the same race",
                      choices = c("Please select..." = NA,
                                 "Allow many to come and live here (3)" = 3,
                                  "Allow some (2)" = 2,
@@ -327,7 +407,7 @@ ui <- shinyUI(
                    ethnic group as most inhabitants to come and live here?",
                      selected = "Please select"),
         ess_selector(ID = "imdfetn",
-                     label = "Immigrants of a different race",
+                     label = "12. Immigrants of a different race",
                      choices = c("Please select..." = NA,
                                 "Allow many to come and live here (3)" = 3,
                                  "Allow some (2)" = 2,
@@ -342,39 +422,39 @@ ui <- shinyUI(
           br(),
           br(),
           br(),
-          ess_selector(ID = "happy", label = "General happiness",
+          ess_selector(ID = "happy", label = "13. General happiness",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "Taking all things together, how happy would you say you are? 
                      (0 = Extremely unhappy, 10 = Extremely happy)"),
-          ess_selector(ID = "stflife", label = "Satisfaction with life in general",
+          ess_selector(ID = "stflife", label = "14. Satisfaction with life in general",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "All things considered, how satisfied are you with your life as a whole nowadays? 
                      Please answer the slider to the left, where 0 means extremely dissatisfied and 10 means 
                      extremely satisfied."),
-          ess_selector(ID = "frprtpl", label = "Political fairness",
+          ess_selector(ID = "frprtpl", label = "15. Political fairness",
                        choices = c("Please select..." = NA,1:5),
                        selected = "Please select...",
                      text = "How much would you say that the political system in country ensures that 
                      everyone has a fair chance to participate in politics? 
                      (0 = Not at all, 4 = A great deal)"),
-          ess_selector(ID = "stfdem", label = "Satisfaction with democracy",
+          ess_selector(ID = "stfdem", label = "16. Satisfaction with democracy",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "On the whole, how satisfied are you with the way democracy works in your country? 
                      (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
-          ess_selector(ID = "stfeco", label = "Satisfaction with economy",
+          ess_selector(ID = "stfeco", label = "17. Satisfaction with economy",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "On the whole how satisfied are you with the present state of the economy in your 
                      country? (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
-          ess_selector(ID = "stfedu", label = "Satisfaction with education",
+          ess_selector(ID = "stfedu", label = "18. Satisfaction with education",
                          choices = c("Please select..." = NA,1:10),
                          selected = "Please select...",
                      text = "On the whole how satisfied are you with the present state of the education system 
                      in your country? (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
-          ess_selector(ID = "stfhlth", label = "Satisfaction with healthcare",
+          ess_selector(ID = "stfhlth", label = "19. Satisfaction with healthcare",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "On the whole how satisfied are you with the present state of the healthcare system 
@@ -382,7 +462,7 @@ ui <- shinyUI(
           br(),
           h3("Placement on political scale", align = "center"),
           br(),
-          ess_selector(ID = "lrscale", label = "Placement on left-right scale",
+          ess_selector(ID = "lrscale", label = "20. Placement on left-right scale",
                        choices = c("Please select..." = NA,1:10),
                        selected = "Please select...",
                      text = "In politics people sometimes talk of 'left' and 'right'. Using this slider, where 
@@ -571,7 +651,8 @@ ui <- shinyUI(
                              selected = "Hungary"),
                  checkboxInput("EU_check_immigration", label = "Hide EU median"),
                  checkboxInput("HU_check_immigration", label = "Hide HU median"),
-                 checkboxInput("own_check_immigration", label = "Hide own score", value = TRUE),
+                 checkboxInput("country_check_immigration", label = "Hide cntry score", value = TRUE),
+                 checkboxInput("SU_check_immigration", label = "Hide SU median"),
                  actionButton("redraw_immigration", "Update plot")),
           column(1)
         ),
@@ -618,7 +699,8 @@ ui <- shinyUI(
                              selected = "Hungary"),
                  checkboxInput("EU_check_satisfaction", label = "Hide EU median"),
                  checkboxInput("HU_check_satisfaction", label = "Hide HU median"),
-                 checkboxInput("own_check_satisfaction", label = "Hide own score", value = TRUE),
+                 checkboxInput("cntry_check_satisfaction", label = "Hide cntry score", value = TRUE),
+                 checkboxInput("SU_check_satisfaction", label = "Hide SU median"),
                  actionButton("redraw_satisfaction", "Update plot")),
           column(1)
         ),
