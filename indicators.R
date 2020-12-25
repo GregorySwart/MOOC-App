@@ -98,6 +98,6 @@ for (i in c("EU","PA","SU")){
                           median_data[i,]$stfhlth)
 }
 
-
+indicators["SU", "Institutional_Satisfaction"] <- 5
 
 indicators$cntry <- rownames(indicators)
