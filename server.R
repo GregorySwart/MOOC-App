@@ -16,7 +16,7 @@ function(input, output, session) {
   
   source("median_data.R")
   
-  removed <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
+  removed <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
                "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
   removed_trust <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
@@ -455,288 +455,15 @@ function(input, output, session) {
                                    )
                    )}, # CIRCULAR BAR CHARTS
                    session = session)
-        prependTab(inputId = "mooc_app", 
-                   tab = {tabPanel(title = "Radar charts", value = "radar_charts", icon = icon("certificate"),
-                                   fluidPage(
-                                     fluidRow(
-                                       column(10, offset = 1, align = "center",
-                                              h1("Radar charts"),
-                                              br(),
-                                              p(textlist$radar_intro),
-                                              br()
-                                       )
-                                     ),
-                                     tabsetPanel(
-                                       tabPanel("Overview",
-                                                {fluidPage(
-                                                  fluidRow(
-                                                    column(10, offset = 1, align = "center",
-                                                           h1("Overview of all variables"),
-                                                           br(),
-                                                           hr()
-                                                    )
-                                                  ),
-                                                  fluidRow(
-                                                    column(1, align = "center",
-                                                           
-                                                    ),
-                                                    column(8, align = "center",
-                                                           plotOutput("radar_all", height = 800),
-                                                    ),
-                                                    column(2, align = "center",
-                                                           selectInput("cntry_radar_all", "Select country",
-                                                                       choices =  list("Austria (AT)" = "AT",
-                                                                                       "Belgium (BE)" = "BE", 
-                                                                                       "Bulgaria (BG)" = "BG",
-                                                                                       "Switzerland (CH)" = "CH",
-                                                                                       "Cyprus (CY)" = "CY",
-                                                                                       "Czechia (CZ)"= "CZ",
-                                                                                       "Germany (DE)" = "DE",
-                                                                                       "Estonia (EE)" = "EE",
-                                                                                       "Finland (FI)" = "FI",
-                                                                                       "France (FR)" = "FR",
-                                                                                       "United Kingdom (GB)" = "GB",
-                                                                                       "Hungary (HU)" = "HU",
-                                                                                       "Ireland (IE)" = "IE",
-                                                                                       "Italy (IT)" = "IT",
-                                                                                       "Netherlands (NL)" = "NL",
-                                                                                       "Norway (NO)" = "NO",
-                                                                                       "Poland (PL)" = "PL",
-                                                                                       "Serbia (RS)" = "RS",
-                                                                                       "Slovenia (SI)" = "SI"),
-                                                                       selected = "AT"),
-                                                           # hr(),
-                                                           checkboxInput("EU_check", label = "Hide EU median"),
-                                                           checkboxInput("cntry_check", label = "Hide country median"),
-                                                           checkboxInput("SU_check", label = "Hide survey median"),
-                                                           checkboxInput("own_check", label = "Hide own score", value = TRUE),
-                                                           actionButton("redraw_radar", "Update plot"),
-                                                           hr(),
-                                                           br(),
-                                                           p("On the radar plot to the left you can see the weighted median values displayed for all 
-                variables measured. A high value in a variable means the participants agreed to a greater extent, 
-                so a high trust score means the respondents are more trusting, and a high immigration score shows 
-                greater tolerance of immigrants.", style = "align:justified"),
-                                                           br(),
-                                                           helpText("Note that most variables are scaled 0 to 10, except the four 
-                following: IMSMETN, IMDFETN, IMPCNTR scale 0 to 3, and FRPRTPL scales 0 to 4. Scores for these 
-                variables have been adjusted to fit on the 0 to 10 scale.")
-                                                    ),
-                                                    column(1)
-                                                  ),
-                                                  fluidRow(
-                                                    hr()
-                                                  )
-                                                )}, # Overview
-                                       ),
-                                       tabPanel("Trust",
-                                                {fluidPage(
-                                                  fluidRow(
-                                                    column(12, align = "center",
-                                                           h1("Trust"),
-                                                           br(),
-                                                           br()
-                                                    )
-                                                  ),
-                                                  fluidRow(
-                                                    column(10, offset = 1,
-                                                           p("Two types of trust indicators were calculated from the variables: Individual and Institutional
-                Trust. People with a high Individual Trust indicator are more likely to trust other people, 
-                and people with a high Institutional Trust indicator are more likely to trust the institutions 
-                that govern them.")
-                                                    )
-                                                  ),
-                                                  fluidRow(
-                                                    column(1),
-                                                    column(6,
-                                                           plotOutput("radar_trust", height = 800, width = "auto")
-                                                    ),
-                                                    column(1,
-                                                           plotOutput("trust_indicators_individual", height = 800, width = 90)
-                                                    ),
-                                                    column(1,
-                                                           plotOutput("trust_indicators_institutional", height = 800, width = 90)
-                                                    ),
-                                                    column(2, align = "center",
-                                                           selectInput("cntry_trust", "Select country",
-                                                                       choices = list("Austria (AT)" = "AT",
-                                                                                      "Belgium (BE)" = "BE", 
-                                                                                      "Bulgaria (BG)" = "BG",
-                                                                                      "Switzerland (CH)" = "CH",
-                                                                                      "Cyprus (CY)" = "CY",
-                                                                                      "Czechia (CZ)"= "CZ",
-                                                                                      "Germany (DE)" = "DE",
-                                                                                      "Estonia (EE)" = "EE",
-                                                                                      "Finland (FI)" = "FI",
-                                                                                      "France (FR)" = "FR",
-                                                                                      "United Kingdom (GB)" = "GB",
-                                                                                      "Hungary (HU)" = "HU",
-                                                                                      "Ireland (IE)" = "IE",
-                                                                                      "Italy (IT)" = "IT",
-                                                                                      "Netherlands (NL)" = "NL",
-                                                                                      "Norway (NO)" = "NO",
-                                                                                      "Poland (PL)" = "PL",
-                                                                                      "Serbia (RS)" = "RS",
-                                                                                      "Slovenia (SI)" = "SI"),
-                                                                       selected = "AT"),
-                                                           checkboxInput("EU_check_trust", label = "Hide EU median"),
-                                                           checkboxInput("cntry_check_trust", label = "Hide country median"),
-                                                           checkboxInput("SU_check_trust", label = "Hide survey median"),
-                                                           checkboxInput("own_check_trust", label = "Hide own score", value = TRUE),
-                                                           actionButton("redraw_trust", "Update plot")),
-                                                    column(1)
-                                                  ),
-                                                  fluidRow(
-                                                    hr()
-                                                  )
-                                                )}, # Trust
-                                       ),
-                                       tabPanel("Immigration",
-                                                {fluidPage(
-                                                  fluidRow(
-                                                    column(12, align = "center",
-                                                           h1("Immigration"),
-                                                           br(),
-                                                           br()
-                                                    )
-                                                  ),
-                                                  fluidRow(
-                                                    column(10, offset = 1,
-                                                           p("Two indicators were derived from variables dealing with immigration: Immigration 
-                     Perception, and Immigration Rejection. (Immigration Racial?) Immigration Perception 
-                     refers to the percieved good or bad effects immigration has in the eyes of its 
-                     residents, calculated by taking the average of the varaibles imbgeco, imueclt, imwbcnt. 
-                     Immigration rejection refers to the proportion of people who answered \"Allow none.\" to 
-                     the question \"How many immigrants would you allow to come and live in your country from 
-                     poorer countries outside of europe?\".")
-                                                    )
-                                                  ),
-                                                  fluidRow(
-                                                    column(1),
-                                                    column(6,
-                                                           plotOutput("radar_immigration", height = 800, width = "auto")
-                                                    ),
-                                                    column(1,
-                                                           plotOutput("immigration_perception", height = 800, width = 90)
-                                                    ),
-                                                    column(1,
-                                                           plotOutput("immigration_rejection", height = 800, width = 90)
-                                                    ),
-                                                    column(2, align = "center",
-                                                           selectInput("cntry_immigration", "Country",
-                                                                       choices = list("Austria (AT)" = "AT",
-                                                                                      "Belgium (BE)" = "BE", 
-                                                                                      "Bulgaria (BG)" = "BG",
-                                                                                      "Switzerland (CH)" = "CH",
-                                                                                      "Cyprus (CY)" = "CY",
-                                                                                      "Czechia (CZ)"= "CZ",
-                                                                                      "Germany (DE)" = "DE",
-                                                                                      "Estonia (EE)" = "EE",
-                                                                                      "Finland (FI)" = "FI",
-                                                                                      "France (FR)" = "FR",
-                                                                                      "United Kingdom (GB)" = "GB",
-                                                                                      "Hungary (HU)" = "HU",
-                                                                                      "Ireland (IE)" = "IE",
-                                                                                      "Italy (IT)" = "IT",
-                                                                                      "Netherlands (NL)" = "NL",
-                                                                                      "Norway (NO)" = "NO",
-                                                                                      "Poland (PL)" = "PL",
-                                                                                      "Serbia (RS)" = "RS",
-                                                                                      "Slovenia (SI)" = "SI"),
-                                                                       selected = "AT"),
-                                                           checkboxInput("EU_check_immigration", label = "Hide EU median"),
-                                                           checkboxInput("cntry_check_immigration", label = "Hide country median"),
-                                                           checkboxInput("SU_check_immigration", label = "Hide survey median"),
-                                                           checkboxInput("own_check_immigration", label = "Hide own score", value = T),
-                                                           actionButton("redraw_immigration", "Update plot")),
-                                                    column(1)
-                                                  ),
-                                                  fluidRow(
-                                                    hr()
-                                                  )
-                                                )}, # Immigration
-                                       ),
-                                       tabPanel("Satisfaction",
-                                                {fluidPage(
-                                                  fluidRow(
-                                                    column(12, align = "center",
-                                                           h1("Satisfaction"),
-                                                           br(),
-                                                           br()
-                                                    )
-                                                  ),
-                                                  fluidRow(
-                                                    column(10, offset = 1,
-                                                           p("Three satisfaction indicators were derived from the data. Subjective Satisfaction 
-                     is the average value of the variables happiness and satisfaction in life. Political 
-                     Satisfaction in the average value of the variables frprtpl (Political system in country 
-                     allows all to participate freely and equally in politics) and satisfaction with how
-                     democracy works. Institutional Satisfaction is the average of the variables stfeco 
-                     (satisfaction with democracy in own country), stfedu (satistaction with education system),
-                     and atfhlth (satisfaction with healthcare system). All variables have range 0-10.")
-                                                    )
-                                                  ),
-                                                  fluidRow(
-                                                    column(1),
-                                                    column(5,
-                                                           plotOutput("radar_satisfaction", height = 800, width = "auto")
-                                                    ),
-                                                    column(1,
-                                                           plotOutput("Subjective_Satisfaction", height = 800, width = 90)
-                                                    ),
-                                                    column(1,
-                                                           plotOutput("Political_Satisfaction", height = 800, width = 90)
-                                                    ),
-                                                    column(1,
-                                                           plotOutput("Institutional_Satisfaction", height = 800, width = 90)
-                                                    ),
-                                                    column(2, align = "center",
-                                                           selectInput("cntry_satisfaction", "Select country",
-                                                                       choices =  list("Austria (AT)" = "AT",
-                                                                                       "Belgium (BE)" = "BE", 
-                                                                                       "Bulgaria (BG)" = "BG",
-                                                                                       "Switzerland (CH)" = "CH",
-                                                                                       "Cyprus (CY)" = "CY",
-                                                                                       "Czechia (CZ)"= "CZ",
-                                                                                       "Germany (DE)" = "DE",
-                                                                                       "Estonia (EE)" = "EE",
-                                                                                       "Finland (FI)" = "FI",
-                                                                                       "France (FR)" = "FR",
-                                                                                       "United Kingdom (GB)" = "GB",
-                                                                                       "Hungary (HU)" = "HU",
-                                                                                       "Ireland (IE)" = "IE",
-                                                                                       "Italy (IT)" = "IT",
-                                                                                       "Netherlands (NL)" = "NL",
-                                                                                       "Norway (NO)" = "NO",
-                                                                                       "Poland (PL)" = "PL",
-                                                                                       "Serbia (RS)" = "RS",
-                                                                                       "Slovenia (SI)" = "SI"),
-                                                                       selected = "AT"),
-                                                           checkboxInput("EU_check_satisfaction", label = "Hide EU median"),
-                                                           checkboxInput("cntry_check_satisfaction", label = "Hide country median"),
-                                                           checkboxInput("SU_check_satisfaction", label = "Hide survey median"),
-                                                           checkboxInput("own_check_satisfaction", label = "Hide own score", value = T),
-                                                           actionButton("redraw_satisfaction", "Update plot")),
-                                                    column(1)
-                                                  ),
-                                                  fluidRow(
-                                                    hr()
-                                                  )
-                                                )}  # Satisfaction
-                                       )
-                                     )
-                                   ),
-                                   
-                                   
-                                   
-                                   
-                   )}, # RADAR CHARTS
-                   session = session)
+        source("radar_charts.R") # RADAR CHARTS
         updateNavbarPage(session = session, inputId = "mooc_app",
                          selected = "radar_charts")
         removeTab(inputId = "mooc_app",
                   target = "survey_lrscale",
                   session = session)
+        for (i in 1:length(stat_variables)){
+          mean_data["Own response", i] <<- as.numeric(input[[stat_variables[i]]])
+        }
       }else{
         updateActionButton(session = session,
                            inputId = "submit_survey",
@@ -752,28 +479,27 @@ function(input, output, session) {
       
       colors_border = c("EU" = rgb(0.2,0.5,0.5,0.9), 
                         "HU" = rgb(0.8,0.2,0.5,0.9), 
-                        "PA" = rgb(0.7,0.5,0.1,0.9), 
-                        "SU" = rgb(0.4,0.7,0.9,0.7))
+                        "PA" = rgb(0.7,0.5,0.1,0.9))
+      
       colors_in = c(rgb(0.2,0.5,0.5,0.4), 
                     rgb(0.8,0.2,0.5,0.4), 
-                    rgb(0.7,0.5,0.1,0.4), 
-                    rgb(0.4,0.7,0.9,0.3) )
+                    rgb(0.7,0.5,0.1,0.4))
       
       radarchart(df = mean_data %>% subset(cntry %nin% removed | cntry == "AT") %>% select(-cntry),
-                 cglcol="grey", 
-                 cglty=1, 
-                 axislabcol="grey20", 
-                 axistype = 5, 
+                 cglcol="grey",
+                 cglty=1,
+                 axislabcol="grey20",
+                 axistype = 5,
                  caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), 
-                 cglwd=1, 
+                 cglwd=1,
                  seg = 10,
-                 pcol=colors_border, 
-                 pfcol=colors_in, 
-                 plwd=4, 
+                 pcol=colors_border,
+                 pfcol=colors_in,
+                 plwd=4,
                  plty=1)
       
       legend("topright",
-             legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == "AT")), 
+             legend = rownames(mean_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == "AT")), 
              bty = "o", fill=colors_in, cex = 0.9)
     })
     
@@ -785,16 +511,10 @@ function(input, output, session) {
         removed <- removed[removed != "EU"]
       }
       
-      if (input$SU_check == T){
-        removed <- removed %>% append("SU")
-      }else if(input$EU_check == F){
-        removed <- removed[removed != "SU"]
-      }
-      
       if (input$own_check == T){
-        removed <- removed %>% append("PA")
+        removed <- removed %>% append("Own response")
       }else if(input$own_check == F){
-        removed <- removed[removed != "PA"]
+        removed <- removed[removed != "Own response"]
       }
       
       if (input$cntry_check == T){
@@ -811,13 +531,11 @@ function(input, output, session) {
         
         colors_border = c(rgb(0.2,0.5,0.5,0.9), 
                           rgb(0.8,0.2,0.5,0.9), 
-                          rgb(0.7,0.5,0.1,0.9), 
-                          rgb(0.4,0.7,0.9,0.9))
+                          rgb(0.7,0.5,0.1,0.9))
         
         colors_in = c(rgb(0.2,0.5,0.5,0.4), 
                       rgb(0.8,0.2,0.5,0.4), 
-                      rgb(0.7,0.5,0.1,0.4), 
-                      rgb(0.4,0.7,0.9,0.4))
+                      rgb(0.7,0.5,0.1,0.4))
         
         radarchart(df = mean_data %>% subset(cntry %nin% removed | cntry == selected_cntry) %>% select(-cntry), 
                    cglcol="grey", 
@@ -833,7 +551,7 @@ function(input, output, session) {
                    plty=1)
         
         legend("topright",
-               legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == selected_cntry)),
+               legend = rownames(mean_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == selected_cntry)),
                bty = "o", fill=colors_in, cex = 0.9)
       })
     })
