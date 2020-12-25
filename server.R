@@ -1,16 +1,17 @@
 function(input, output, session) {
   
-  #########################
+  #=======================#
   # Data load and cleanup #
-  #########################
+  #=======================#
   
-  source("libraries.R")
-  source("functions.R")
-  ess_data <<- as.data.frame(read_spss("ess_data.sav"))
   hardcode <- TRUE
   
-  #Import data
+  source("libraries.R") # load in libraries
+  source("texts.R")
+  source("functions.R") # define %nin%, ess_selector, ess_slider functions
   
+  #Import data
+  ess_data <<- as.data.frame(read_spss("ess_data.sav"))
   countries <<- ess_data$cntry %>% unique() %>% values2labels() %>% unclass()
   
   source("median_data.R")
@@ -34,12 +35,12 @@ function(input, output, session) {
   
   #Clean data
   
-  #############
+  #===========#
   # Reactives #
-  #############
+  #===========#
   
+  # BUTTON: Remove intro and add trust
   {
-    # BUTTON: Remove intro and add trust
     observeEvent(input$end_intro, once = TRUE, {
       insertTab(inputId = "mooc_app", target = "data",
                 tab = {
@@ -102,8 +103,8 @@ function(input, output, session) {
     })
   } # Introduction
   
+  # BUTTON: remove trust and add immigration
   {
-    # BUTTON: remove trust and add immigration
     observeEvent(input$end_trust, once = FALSE, {
       state <- TRUE
       for (i in trust_variables){
@@ -186,8 +187,8 @@ function(input, output, session) {
     })
   } # Survey - Trust
   
+  # BUTTON: remove immigration and add satisfaction
   {
-    # BUTTON: remove immigration and add satisfaction
     observeEvent(input$end_immigration, once = FALSE, {
       state <- TRUE
       for (i in immigration_variables){
@@ -260,8 +261,8 @@ function(input, output, session) {
     })
   } # Survey - Immigration
   
+  # BUTTON: remove Satisfaction and add Left Right Scale
   {
-    # BUTTON: remove Satisfaction and add Left Right Scale
     observeEvent(input$end_satisfaction, once = FALSE, {
       state <- TRUE
       for (i in satisfaction_variables){
@@ -312,8 +313,8 @@ function(input, output, session) {
     })
   } # Survey - Satisfaction
   
+  # BUTTON: remove lrscale tab and add RADAR CHARTS, CIRCULAR BAR CHARTS and HISTOGRAMS
   {
-    # BUTTON: remove lrscale tab and add graphics
     observeEvent(input$submit_survey, once = FALSE, {
       state <- TRUE
       if(input$lrscale %nin% 0:10){state <- FALSE}
@@ -384,7 +385,7 @@ function(input, output, session) {
                                        )
                                      )
                                    )
-                   )}, # Histograms
+                   )}, # HISTOGRAMS
                    session = session)
         prependTab(inputId = "mooc_app",
                    tab = {tabPanel("Circular bar charts",  icon = icon("adjust"),
@@ -452,7 +453,7 @@ function(input, output, session) {
                                        )
                                      )
                                    )
-                   )}, # Circular Bar Charts
+                   )}, # CIRCULAR BAR CHARTS
                    session = session)
         prependTab(inputId = "mooc_app", 
                    tab = {tabPanel(title = "Radar charts", value = "radar_charts", icon = icon("certificate"),
@@ -461,7 +462,8 @@ function(input, output, session) {
                                        column(10, offset = 1, align = "center",
                                               h1("Radar charts"),
                                               br(),
-                                              p("Radar chart explanation and legend goes here"),
+                                              p(textlist$radar_intro),
+                                              br()
                                        )
                                      ),
                                      tabsetPanel(
@@ -728,7 +730,7 @@ function(input, output, session) {
                                    
                                    
                                    
-                   )},
+                   )}, # RADAR CHARTS
                    session = session)
         updateNavbarPage(session = session, inputId = "mooc_app",
                          selected = "radar_charts")
@@ -748,14 +750,31 @@ function(input, output, session) {
   {
     output$radar_all <- renderPlot({
       
-      colors_border=c("EU" = rgb(0.2,0.5,0.5,0.9), "HU" = rgb(0.8,0.2,0.5,0.9) , "PA" = rgb(0.7,0.5,0.1,0.9), "SU" = rgb(0.4,0.7,0.9,0.7) )
-      colors_in=c(rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4), rgb(0.4,0.7,0.9,0.3) )
+      colors_border = c("EU" = rgb(0.2,0.5,0.5,0.9), 
+                        "HU" = rgb(0.8,0.2,0.5,0.9), 
+                        "PA" = rgb(0.7,0.5,0.1,0.9), 
+                        "SU" = rgb(0.4,0.7,0.9,0.7))
+      colors_in = c(rgb(0.2,0.5,0.5,0.4), 
+                    rgb(0.8,0.2,0.5,0.4), 
+                    rgb(0.7,0.5,0.1,0.4), 
+                    rgb(0.4,0.7,0.9,0.3) )
       
-      radarchart(df = median_data %>% subset(cntry %nin% removed | cntry == "AT") %>% select(-cntry), 
-                 cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), cglwd=1, seg = 10,
-                 pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+      radarchart(df = mean_data %>% subset(cntry %nin% removed | cntry == "AT") %>% select(-cntry),
+                 cglcol="grey", 
+                 cglty=1, 
+                 axislabcol="grey20", 
+                 axistype = 5, 
+                 caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), 
+                 cglwd=1, 
+                 seg = 10,
+                 pcol=colors_border, 
+                 pfcol=colors_in, 
+                 plwd=4, 
+                 plty=1)
       
-      legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == "AT")), bty = "o", fill=colors_in, cex = 0.9)
+      legend("topright",
+             legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == "AT")), 
+             bty = "o", fill=colors_in, cex = 0.9)
     })
     
     observeEvent(input$redraw_radar, {
@@ -790,14 +809,32 @@ function(input, output, session) {
       
       output$radar_all <- renderPlot({
         
-        colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9), rgb(0.4,0.7,0.9,0.9))
-        colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4), rgb(0.4,0.7,0.9,0.4) )
+        colors_border = c(rgb(0.2,0.5,0.5,0.9), 
+                          rgb(0.8,0.2,0.5,0.9), 
+                          rgb(0.7,0.5,0.1,0.9), 
+                          rgb(0.4,0.7,0.9,0.9))
         
-        radarchart(df = median_data %>% subset(cntry %nin% removed | cntry == selected_cntry) %>% select(-cntry), 
-                   cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), cglwd=1, seg = 10,
-                   pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+        colors_in = c(rgb(0.2,0.5,0.5,0.4), 
+                      rgb(0.8,0.2,0.5,0.4), 
+                      rgb(0.7,0.5,0.1,0.4), 
+                      rgb(0.4,0.7,0.9,0.4))
         
-        legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == selected_cntry)), bty = "o", fill=colors_in, cex = 0.9)
+        radarchart(df = mean_data %>% subset(cntry %nin% removed | cntry == selected_cntry) %>% select(-cntry), 
+                   cglcol="grey", 
+                   cglty=1, 
+                   axislabcol="grey20", 
+                   axistype = 5, 
+                   caxislabels = c(0,NA,2,NA,4,NA,6,NA,8,NA,NA), 
+                   cglwd=1, 
+                   seg = 10,
+                   pcol=colors_border, 
+                   pfcol=colors_in, 
+                   plwd=4, 
+                   plty=1)
+        
+        legend("topright",
+               legend = rownames(median_data %>% subset(cntry %nin% c(removed,"Max","Min") | cntry == selected_cntry)),
+               bty = "o", fill=colors_in, cex = 0.9)
       })
     })
   } # Overview
@@ -1180,7 +1217,7 @@ function(input, output, session) {
                          "stfedu"  ~ "Satisfaction with education system",
                          "stfhlth" ~ "Satisfaction with healthcare",
                          "lrscale" ~ "Self placement on left-right scale"))
-  })
+  }) # Histograms tab
   
   
   output$svybar <- renderPlot({
@@ -1250,5 +1287,5 @@ function(input, output, session) {
     
     
     p1
-  })
+  }) # Circular barplots tab
 }

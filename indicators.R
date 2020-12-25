@@ -45,31 +45,6 @@ for (i in 1:length(countries)){
                                      median_data[countries[i],]$stfhlth)
 }
 
-# indicators["EU",1] <- mean(median_data["EU",]$ppltrst, 
-#                            median_data["EU",]$pplfair, 
-#                            median_data["EU",]$pplhlp)
-# 
-# indicators["EU",2] <- mean(median_data["EU",]$trstprl, 
-#                            median_data["EU",]$trstep, 
-#                            median_data["EU",]$trstlgl)
-# 
-# indicators["PA",1] <- mean(median_data["PA",]$ppltrst, 
-#                            median_data["PA",]$pplfair, 
-#                            median_data["PA",]$pplhlp)
-# 
-# indicators["PA",2] <- mean(median_data["PA",]$trstprl, 
-#                            median_data["PA",]$trstep, 
-#                            median_data["PA",]$trstlgl)
-# 
-# indicators["SU",1] <- mean(median_data["SU",]$ppltrst, 
-#                            median_data["SU",]$pplfair, 
-#                            median_data["SU",]$pplhlp)
-# 
-# indicators["SU",2] <- mean(median_data["SU",]$trstprl, 
-#                            median_data["SU",]$trstep, 
-#                            median_data["SU",]$trstlgl)
-
-
 for (i in c("EU","PA","SU")){
   indicators[i,1] <- mean(median_data[i,]$ppltrst, 
                           median_data[i,]$pplfair, 
@@ -101,3 +76,5 @@ for (i in c("EU","PA","SU")){
 indicators["SU", "Institutional_Satisfaction"] <- 5
 
 indicators$cntry <- rownames(indicators)
+
+rm("i")
