@@ -1,3 +1,19 @@
+variables <- c("agea", "gndr", "eisced", "ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", 
+               "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", 
+               "stfdem","stfeco", "stfedu", "stfhlth", "lrscale")
+
+stat_variables <- c("ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", 
+                    "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", 
+                    "stfdem","stfeco", "stfedu", "stfhlth", "lrscale")
+
+trust_variables <- c("ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", "trstlgl")
+
+immigration_variables <- c("imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn")
+
+satisfaction_variables <- c("happy", "stflife","frprtpl", "stfdem","stfeco", "stfedu", "stfhlth")
+
+
+
 # Prepare Means
 
 mean_data <- as.data.frame(t(data.frame(rep(10,23),rep(0,23))))

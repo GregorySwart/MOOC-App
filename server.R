@@ -4,7 +4,7 @@ function(input, output, session) {
   # Data load and cleanup #
   #=======================#
   
-  hardcode <- TRUE
+  hardcode <- TRUE # set this to TRUE when testing to skip through the questionnaire
   
   source("libraries.R") # load in libraries
   source("texts.R")
@@ -13,6 +13,8 @@ function(input, output, session) {
   #Import data
   ess_data <<- as.data.frame(read_spss("ess_data.sav"))
   countries <<- ess_data$cntry %>% unique() %>% values2labels() %>% unclass()
+  
+  variables <<- colnames(ess_data)[5:25]
   
   source("median_data.R")
   
@@ -28,7 +30,7 @@ function(input, output, session) {
   removed_satisfaction <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
                             "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
-  source("indicators.R")
+  #source("indicators.R")
   
   ready <- c("Max", "Min", "EU", "HU", "SU", "PA")
   ready_var <- c("Max", "Min", "EU", "HU", "SU")
@@ -445,7 +447,7 @@ function(input, output, session) {
                                               )
                                        ),
                                        column(6,
-                                              plotOutput("svybar", height = 800)
+                                              plotOutput("svybar", height = 550)
                                        )
                                      )
                                    )
@@ -526,9 +528,10 @@ function(input, output, session) {
         selected_cntry <- input$cntry_radar_all
       }
       
-      for (i in stat_variables){
-        median_data["PA",i] <- as.numeric(input[[i]])
-      }
+      # THE ERROR COMES FROM THIS
+      # for (i in stat_variables){
+      #   mean_data["PA",i] <- as.numeric(input[[i]])
+      # }
       
       output$radar_all <- renderPlot({
         
@@ -613,9 +616,9 @@ function(input, output, session) {
         selected_cntry_trust <- input$cntry_trust
       }
       
-      for (i in stat_variables){
-        median_data["PA",i] <- as.numeric(input[[i]])
-      }
+      # for (i in stat_variables){
+      #   mean_data["PA",i] <- as.numeric(input[[i]])
+      # }
       
       output$radar_trust <- renderPlot({
         colors_border = c(rgb(0.2,0.5,0.5,0.9),
@@ -703,9 +706,9 @@ function(input, output, session) {
         selected_cntry_immigration <- input$cntry_immigration
       }
       
-      for (i in stat_variables){
-        median_data["PA",i] <- as.numeric(input[[i]])
-      }
+      # for (i in stat_variables){
+      #   mean_data["PA",i] <- as.numeric(input[[i]])
+      # }
       
       output$radar_immigration <- renderPlot({
         colors_border=c(rgb(0.2,0.5,0.5,0.9),
@@ -773,45 +776,6 @@ function(input, output, session) {
              cex = 0.9)
     })
     
-    # output$Subjective_Satisfaction <- renderPlot({
-    #   ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-    #     geom_col(mapping = aes(y = Subjective_Satisfaction, x = cntry), 
-    #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-    #                          "PA" = rgb(0.7,0.5,0.1,0.9),
-    #                          "HU" = rgb(0.8,0.2,0.5,0.9),
-    #                          "SU" = rgb(0.4,0.7,0.9,0.9))
-    #     ) +
-    #     theme(panel.grid.major.x = element_blank(),
-    #           panel.grid.minor.x = element_blank()) +
-    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    # })
-    # 
-    # output$Political_Satisfaction <- renderPlot({
-    #   ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-    #     geom_col(mapping = aes(y = Political_Satisfaction, x = cntry), 
-    #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-    #                          "PA" = rgb(0.7,0.5,0.1,0.9),
-    #                          "HU" = rgb(0.8,0.2,0.5,0.9),
-    #                          "SU" = rgb(0.4,0.7,0.9,0.9))
-    #     ) +
-    #     theme(panel.grid.major.x = element_blank(),
-    #           panel.grid.minor.x = element_blank()) +
-    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    # })
-    # 
-    # output$Institutional_Satisfaction <- renderPlot({
-    #   ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-    #     geom_col(mapping = aes(y = Institutional_Satisfaction, x = cntry), 
-    #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-    #                          "PA" = rgb(0.7,0.5,0.1,0.9),
-    #                          "HU" = rgb(0.8,0.2,0.5,0.9),
-    #                          "SU" = rgb(0.4,0.7,0.9,0.9))
-    #     ) +
-    #     theme(panel.grid.major.x = element_blank(),
-    #           panel.grid.minor.x = element_blank()) +
-    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    # })
-    
     observeEvent(input$redraw_satisfaction, {
       
       if (input$EU_check_satisfaction == T){
@@ -819,12 +783,6 @@ function(input, output, session) {
       }else if(input$EU_check_satisfaction == F){
         removed_satisfaction <- removed_satisfaction[removed_satisfaction != "EU"]
       }
-      
-      # if (input$SU_check_satisfaction == T){
-      #   removed_satisfaction <- removed_satisfaction %>% append("SU")
-      # }else if(input$SU_check_satisfaction == F){
-      #   removed_satisfaction <- removed_satisfaction[removed_satisfaction != "SU"]
-      # }
       
       if (input$own_check_satisfaction == T){
         removed_satisfaction <- removed_satisfaction %>% append("Own response")
@@ -838,9 +796,9 @@ function(input, output, session) {
         selected_cntry_satisfaction <- input$cntry_satisfaction
       }
       
-      for (i in stat_variables){
-        median_data["PA",i] <- as.numeric(input[[i]])
-      }
+      # for (i in stat_variables){
+      #   mean_data["PA",i] <- as.numeric(input[[i]])
+      # }
       
       output$radar_satisfaction <- renderPlot({
         colors_border = c(rgb(0.2,0.5,0.5,0.9),
@@ -873,45 +831,6 @@ function(input, output, session) {
                fill=colors_in,
                cex = 0.9)
       })
-      
-      # output$Subjective_Satisfaction <- renderPlot({
-      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_satisfaction)) +
-      #     geom_col(mapping = aes(y = Subjective_Satisfaction, x = cntry), 
-      #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-      #                          "PA" = rgb(0.7,0.5,0.1,0.9),
-      #                          "CO" = rgb(0.8,0.2,0.5,0.9),
-      #                          "SU" = rgb(0.4,0.7,0.9,0.9))
-      #     ) +
-      #     theme(panel.grid.major.x = element_blank(),
-      #           panel.grid.minor.x = element_blank()) +
-      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      # })
-      # 
-      # output$Political_Satisfaction <- renderPlot({
-      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_satisfaction)) +
-      #     geom_col(mapping = aes(y = Political_Satisfaction, x = cntry), 
-      #              fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-      #                           "PA" = rgb(0.7,0.5,0.1,0.9),
-      #                           "CO" = rgb(0.8,0.2,0.5,0.9),
-      #                           "SU" = rgb(0.4,0.7,0.9,0.9))) +
-      #     theme(panel.grid.major.x = element_blank(),
-      #           panel.grid.minor.x = element_blank()) +
-      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      # })
-      # 
-      # 
-      # output$Institutional_Satisfaction <- renderPlot({
-      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_satisfaction)) +
-      #     geom_col(mapping = aes(y = Institutional_Satisfaction, x = cntry), 
-      #              fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-      #                           "PA" = rgb(0.7,0.5,0.1,0.9),
-      #                           "CO" = rgb(0.8,0.2,0.5,0.9),
-      #                           "SU" = rgb(0.4,0.7,0.9,0.9))) +
-      #     theme(panel.grid.major.x = element_blank(),
-      #           panel.grid.minor.x = element_blank()) +
-      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      # })
-      
     })
   } # Satisfaction
   

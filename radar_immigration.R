@@ -2,7 +2,6 @@ fluidPage(
   fluidRow(
     column(12, align = "center",
            h1("Immigration"),
-           br(),
            br()
     )
   ),
@@ -17,12 +16,6 @@ fluidPage(
     column(8,
            plotOutput("radar_immigration", height = 800, width = "auto")
     ),
-    # column(1,
-    #        plotOutput("immigration_perception", height = 800, width = 90)
-    # ),
-    # column(1,
-    #        plotOutput("immigration_rejection", height = 800, width = 90)
-    # ),
     column(2, align = "center",
            selectInput("cntry_immigration", "Select country",
                        choices = list("Austria (AT)" = "AT",
@@ -47,7 +40,6 @@ fluidPage(
                        selected = "AT"),
            checkboxInput("EU_check_immigration", label = "Hide mean of all countries"),
            checkboxInput("cntry_check_immigration", label = "Hide selected country"),
-           #checkboxInput("SU_check_immigration", label = "Hide survey median"),
            checkboxInput("own_check_immigration", label = "Hide own response", value = T),
            actionButton("redraw_immigration", "Update plot")),
     column(1)
