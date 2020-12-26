@@ -653,39 +653,59 @@ function(input, output, session) {
   
   {
     output$radar_immigration <- renderPlot({
-      colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9), "SU" = rgb(0.4,0.7,0.9,0.7) )
-      colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+      colors_border=c( rgb(0.2,0.5,0.5,0.9),
+                       rgb(0.8,0.2,0.5,0.9),
+                       rgb(0.7,0.5,0.1,0.9))
       
-      radarchart(df = median_data[ready,] %>% select(imbgeco,imueclt,imwbcnt,impcntr,imsmetn,imdfetn), 
-                 cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
-                 pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+      colors_in=c(rgb(0.2,0.5,0.5,0.4),
+                  rgb(0.8,0.2,0.5,0.4),
+                  rgb(0.7,0.5,0.1,0.4))
       
-      legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_trust,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
+      radarchart(df = {mean_data %>% subset(cntry %nin% removed_immigration | cntry == "AT") %>%
+                   select(-cntry)}[,7:12], # %>% select(imbgeco,imueclt,imwbcnt,impcntr,imsmetn,imdfetn),
+                 cglcol="grey",
+                 cglty=1,
+                 axislabcol="grey20",
+                 axistype = 5,
+                 caxislabels = c(0,2,4,6,8,NA),
+                 cglwd=1,
+                 seg = 5,
+                 pcol=colors_border,
+                 pfcol=colors_in,
+                 plwd=4, 
+                 plty=1)
+      
+      legend("topright",
+             legend = rownames(mean_data %>%
+                                 subset(cntry %nin% c(removed_immigration,"Max","Min") | cntry == "AT")),
+             bty = "o",
+             fill = colors_in,
+             cex = 0.9)
     })
     
-    output$immigration_perception <- renderPlot({
-      ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-        geom_col(mapping = aes(y = Immigration_perception, x = cntry), 
-                 fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-                             "PA" = rgb(0.7,0.5,0.1,0.9),
-                             "AT" = rgb(0.8,0.2,0.5,0.9),
-                             "SU" = rgb(0.4,0.7,0.9,0.9))
-        ) +
-        theme(panel.grid.major.x = element_blank(),
-              panel.grid.minor.x = element_blank()) +
-        scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    })
-    
-    output$immigration_rejection <- renderPlot({
-      ggplot(indicators[which(rownames(indicators) %in% ready_var),]) +
-        geom_col(mapping = aes(y = Immigration_rejection, x = cntry), 
-                 fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-                              "AT" = rgb(0.8,0.2,0.5,0.9),
-                              "SU" = rgb(0.4,0.7,0.9,0.9))) +
-        theme(panel.grid.major.x = element_blank(),
-              panel.grid.minor.x = element_blank()) +
-        scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    })
+    # output$immigration_perception <- renderPlot({
+    #   ggplot(indicators[which(rownames(indicators) %in% ready),]) +
+    #     geom_col(mapping = aes(y = Immigration_perception, x = cntry), 
+    #              fill = list(rgb(0.2,0.5,0.5,0.9),
+    #                          rgb(0.7,0.5,0.1,0.9),
+    #                          rgb(0.8,0.2,0.5,0.9),
+    #                          rgb(0.4,0.7,0.9,0.9))
+    #     ) +
+    #     theme(panel.grid.major.x = element_blank(),
+    #           panel.grid.minor.x = element_blank()) +
+    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+    # })
+    # 
+    # output$immigration_rejection <- renderPlot({
+    #   ggplot(indicators[which(rownames(indicators) %in% ready_var),]) +
+    #     geom_col(mapping = aes(y = Immigration_rejection, x = cntry), 
+    #              fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
+    #                           "AT" = rgb(0.8,0.2,0.5,0.9),
+    #                           "SU" = rgb(0.4,0.7,0.9,0.9))) +
+    #     theme(panel.grid.major.x = element_blank(),
+    #           panel.grid.minor.x = element_blank()) +
+    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+    # })
     
     observeEvent(input$redraw_immigration, {
       
@@ -695,16 +715,16 @@ function(input, output, session) {
         removed_immmigration <- removed_immigration[removed_immigration != "EU"]
       }
       
-      if (input$SU_check_immigration == T){
-        removed_immigration <- removed_immigration %>% append("SU")
-      }else if(input$SU_check_immigration == F){
-        removed_immigration <- removed_immigration[removed_immigration != "SU"]
-      }
+      # if (input$SU_check_immigration == T){
+      #   removed_immigration <- removed_immigration %>% append("SU")
+      # }else if(input$SU_check_immigration == F){
+      #   removed_immigration <- removed_immigration[removed_immigration != "SU"]
+      # }
       
       if (input$own_check_immigration == T){
-        removed_immigration <- removed_immigration %>% append("PA")
+        removed_immigration <- removed_immigration %>% append("Own response")
       }else if(input$own_check_immigration == F){
-        removed_immigration <- removed_immigration[removed_immigration != "PA"]
+        removed_immigration <- removed_immigration[removed_immigration != "Own response"]
       }
       
       if (input$cntry_check_immigration == T){
@@ -718,39 +738,59 @@ function(input, output, session) {
       }
       
       output$radar_immigration <- renderPlot({
-        colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9), "SU" = rgb(0.4,0.7,0.9,0.7) )
-        colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+        colors_border=c(rgb(0.2,0.5,0.5,0.9),
+                        rgb(0.8,0.2,0.5,0.9),
+                        rgb(0.7,0.5,0.1,0.9))
         
-        radarchart(df = median_data %>% subset(cntry %nin% removed_immigration | cntry == selected_cntry_immigration) %>% select(-cntry) %>% select(imbgeco,imueclt,imwbcnt,impcntr,imsmetn,imdfetn),
-                   cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
-                   pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+        colors_in=c(rgb(0.2,0.5,0.5,0.4),
+                    rgb(0.8,0.2,0.5,0.4),
+                    rgb(0.7,0.5,0.1,0.4))
         
-        legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed_immigration,"Max","Min") | cntry == selected_cntry_immigration)), bty = "o", fill=colors_in, cex = 0.9)
+        radarchart(df = {mean_data %>% subset(cntry %nin% removed_immigration | cntry == selected_cntry_immigration) %>% 
+                          select(-cntry)}[,7:12], # %>% select(imbgeco,imueclt,imwbcnt,impcntr,imsmetn,imdfetn),
+                   cglcol="grey",
+                   cglty=1,
+                   axislabcol="grey20",
+                   axistype = 5,
+                   caxislabels = c(0,2,4,6,8,NA),
+                   cglwd=1,
+                   seg = 5,
+                   pcol=colors_border,
+                   pfcol=colors_in,
+                   plwd=4,
+                   plty=1)
+        
+        legend("topright",
+               legend = rownames(mean_data %>%
+                 subset(cntry %nin% c(removed_immigration,"Max","Min") | cntry == selected_cntry_immigration)),
+               bty = "o",
+               fill=colors_in,
+               cex = 0.9)
       })
       
-      output$immigration_perception <- renderPlot({
-        ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_immigration)) +
-          geom_col(mapping = aes(y = Immigration_perception, x = cntry),
-                   fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-                               "PA" = rgb(0.7,0.5,0.1,0.9),
-                               "CO" = rgb(0.8,0.2,0.5,0.9),
-                               "SU" = rgb(0.4,0.7,0.9,0.9))
-          ) +
-          theme(panel.grid.major.x = element_blank(),
-                panel.grid.minor.x = element_blank()) +
-          scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      })
-      
-      output$immigration_rejection <- renderPlot({
-        ggplot(indicators %>% subset(cntry %in% c("EU","SU") | cntry == selected_cntry_immigration)) +
-          geom_col(mapping = aes(y = Immigration_rejection, x = cntry),
-                   fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-                                "CO" = rgb(0.8,0.2,0.5,0.9),
-                                "SU" = rgb(0.4,0.7,0.9,0.9))) +
-          theme(panel.grid.major.x = element_blank(),
-                panel.grid.minor.x = element_blank()) +
-          scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      })
+      # output$immigration_perception <- renderPlot({
+      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_immigration)) +
+      #     geom_col(mapping = aes(y = Immigration_perception, x = cntry),
+      #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
+      #                          "PA" = rgb(0.7,0.5,0.1,0.9),
+      #                          "CO" = rgb(0.8,0.2,0.5,0.9),
+      #                          "SU" = rgb(0.4,0.7,0.9,0.9))
+      #     ) +
+      #     theme(panel.grid.major.x = element_blank(),
+      #           panel.grid.minor.x = element_blank()) +
+      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+      # })
+      # 
+      # output$immigration_rejection <- renderPlot({
+      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU") | cntry == selected_cntry_immigration)) +
+      #     geom_col(mapping = aes(y = Immigration_rejection, x = cntry),
+      #              fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
+      #                           "CO" = rgb(0.8,0.2,0.5,0.9),
+      #                           "SU" = rgb(0.4,0.7,0.9,0.9))) +
+      #     theme(panel.grid.major.x = element_blank(),
+      #           panel.grid.minor.x = element_blank()) +
+      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+      # })
       
     })
   } # Immigration
