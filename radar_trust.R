@@ -44,10 +44,10 @@ fluidPage(
                                       "Serbia (RS)" = "RS",
                                       "Slovenia (SI)" = "SI"),
                        selected = "AT"),
-           checkboxInput("EU_check_trust", label = "Hide EU median"),
-           checkboxInput("cntry_check_trust", label = "Hide country median"),
+           checkboxInput("EU_check_trust", label = "Hide mean of all countries"),
+           checkboxInput("cntry_check_trust", label = "Hide selected country"),
            #checkboxInput("SU_check_trust", label = "Hide survey median"),
-           checkboxInput("own_check_trust", label = "Hide own score", value = TRUE),
+           checkboxInput("own_check_trust", label = "Hide own response", value = TRUE),
            actionButton("redraw_trust", "Update plot")),
     column(1)
   ),

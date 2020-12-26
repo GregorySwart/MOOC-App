@@ -683,30 +683,6 @@ function(input, output, session) {
              cex = 0.9)
     })
     
-    # output$immigration_perception <- renderPlot({
-    #   ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-    #     geom_col(mapping = aes(y = Immigration_perception, x = cntry), 
-    #              fill = list(rgb(0.2,0.5,0.5,0.9),
-    #                          rgb(0.7,0.5,0.1,0.9),
-    #                          rgb(0.8,0.2,0.5,0.9),
-    #                          rgb(0.4,0.7,0.9,0.9))
-    #     ) +
-    #     theme(panel.grid.major.x = element_blank(),
-    #           panel.grid.minor.x = element_blank()) +
-    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    # })
-    # 
-    # output$immigration_rejection <- renderPlot({
-    #   ggplot(indicators[which(rownames(indicators) %in% ready_var),]) +
-    #     geom_col(mapping = aes(y = Immigration_rejection, x = cntry), 
-    #              fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-    #                           "AT" = rgb(0.8,0.2,0.5,0.9),
-    #                           "SU" = rgb(0.4,0.7,0.9,0.9))) +
-    #     theme(panel.grid.major.x = element_blank(),
-    #           panel.grid.minor.x = element_blank()) +
-    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    # })
-    
     observeEvent(input$redraw_immigration, {
       
       if (input$EU_check_immigration == T){
@@ -714,12 +690,6 @@ function(input, output, session) {
       }else if(input$EU_check_trust == F){
         removed_immmigration <- removed_immigration[removed_immigration != "EU"]
       }
-      
-      # if (input$SU_check_immigration == T){
-      #   removed_immigration <- removed_immigration %>% append("SU")
-      # }else if(input$SU_check_immigration == F){
-      #   removed_immigration <- removed_immigration[removed_immigration != "SU"]
-      # }
       
       if (input$own_check_immigration == T){
         removed_immigration <- removed_immigration %>% append("Own response")
@@ -767,85 +737,80 @@ function(input, output, session) {
                fill=colors_in,
                cex = 0.9)
       })
-      
-      # output$immigration_perception <- renderPlot({
-      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_immigration)) +
-      #     geom_col(mapping = aes(y = Immigration_perception, x = cntry),
-      #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-      #                          "PA" = rgb(0.7,0.5,0.1,0.9),
-      #                          "CO" = rgb(0.8,0.2,0.5,0.9),
-      #                          "SU" = rgb(0.4,0.7,0.9,0.9))
-      #     ) +
-      #     theme(panel.grid.major.x = element_blank(),
-      #           panel.grid.minor.x = element_blank()) +
-      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      # })
-      # 
-      # output$immigration_rejection <- renderPlot({
-      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU") | cntry == selected_cntry_immigration)) +
-      #     geom_col(mapping = aes(y = Immigration_rejection, x = cntry),
-      #              fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-      #                           "CO" = rgb(0.8,0.2,0.5,0.9),
-      #                           "SU" = rgb(0.4,0.7,0.9,0.9))) +
-      #     theme(panel.grid.major.x = element_blank(),
-      #           panel.grid.minor.x = element_blank()) +
-      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      # })
-      
     })
   } # Immigration
   
   
   {
     output$radar_satisfaction <- renderPlot({
-      colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9), rgb(0.7,0.5,0.1,0.9), rgb(0.4,0.7,0.9,0.7) )
-      colors_in =   c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4), rgb(0.7,0.5,0.1,0.4), rgb(0.4,0.7,0.9,0.3)  )
+      colors_border = c(rgb(0.2,0.5,0.5,0.9),
+                        rgb(0.8,0.2,0.5,0.9),
+                        rgb(0.7,0.5,0.1,0.9))
       
-      radarchart(df = median_data[ready,] %>% select(happy, stflife, frprtpl, stfdem, stfeco, stfedu, stfhlth), 
-                 cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
-                 pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+      colors_in = c(rgb(0.2,0.5,0.5,0.4),
+                    rgb(0.8,0.2,0.5,0.4),
+                    rgb(0.7,0.5,0.1,0.4))
       
-      legend("topright", legend = rownames(median_data[which(rownames(median_data) %nin% c(removed_satisfaction,"Min","Max") & rownames(median_data) %in% ready),]), bty = "o", fill=colors_in, cex = 0.9)
+      radarchart(df = {mean_data %>% subset(cntry %nin% removed_satisfaction | cntry == "AT") %>%
+                    select(-cntry)}[,13:19], # %>% select(happy, stflife, frprtpl, stfdem, stfeco, stfedu, stfhlth),
+                 cglcol="grey",
+                 cglty=1,
+                 axislabcol="grey20",
+                 axistype = 5,
+                 caxislabels = c(0,2,4,6,8,NA),
+                 cglwd=1,
+                 seg = 5,
+                 pcol=colors_border,
+                 pfcol=colors_in,
+                 plwd=4,
+                 plty=1)
+      
+      legend("topright",
+             legend = rownames(mean_data %>%
+                                 subset(cntry %nin% c(removed_satisfaction,"Max","Min") | cntry == "AT")),
+             bty = "o",
+             fill=colors_in,
+             cex = 0.9)
     })
     
-    output$Subjective_Satisfaction <- renderPlot({
-      ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-        geom_col(mapping = aes(y = Subjective_Satisfaction, x = cntry), 
-                 fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-                             "PA" = rgb(0.7,0.5,0.1,0.9),
-                             "HU" = rgb(0.8,0.2,0.5,0.9),
-                             "SU" = rgb(0.4,0.7,0.9,0.9))
-        ) +
-        theme(panel.grid.major.x = element_blank(),
-              panel.grid.minor.x = element_blank()) +
-        scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    })
-    
-    output$Political_Satisfaction <- renderPlot({
-      ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-        geom_col(mapping = aes(y = Political_Satisfaction, x = cntry), 
-                 fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-                             "PA" = rgb(0.7,0.5,0.1,0.9),
-                             "HU" = rgb(0.8,0.2,0.5,0.9),
-                             "SU" = rgb(0.4,0.7,0.9,0.9))
-        ) +
-        theme(panel.grid.major.x = element_blank(),
-              panel.grid.minor.x = element_blank()) +
-        scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    })
-    
-    output$Institutional_Satisfaction <- renderPlot({
-      ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-        geom_col(mapping = aes(y = Institutional_Satisfaction, x = cntry), 
-                 fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-                             "PA" = rgb(0.7,0.5,0.1,0.9),
-                             "HU" = rgb(0.8,0.2,0.5,0.9),
-                             "SU" = rgb(0.4,0.7,0.9,0.9))
-        ) +
-        theme(panel.grid.major.x = element_blank(),
-              panel.grid.minor.x = element_blank()) +
-        scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    })
+    # output$Subjective_Satisfaction <- renderPlot({
+    #   ggplot(indicators[which(rownames(indicators) %in% ready),]) +
+    #     geom_col(mapping = aes(y = Subjective_Satisfaction, x = cntry), 
+    #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
+    #                          "PA" = rgb(0.7,0.5,0.1,0.9),
+    #                          "HU" = rgb(0.8,0.2,0.5,0.9),
+    #                          "SU" = rgb(0.4,0.7,0.9,0.9))
+    #     ) +
+    #     theme(panel.grid.major.x = element_blank(),
+    #           panel.grid.minor.x = element_blank()) +
+    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+    # })
+    # 
+    # output$Political_Satisfaction <- renderPlot({
+    #   ggplot(indicators[which(rownames(indicators) %in% ready),]) +
+    #     geom_col(mapping = aes(y = Political_Satisfaction, x = cntry), 
+    #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
+    #                          "PA" = rgb(0.7,0.5,0.1,0.9),
+    #                          "HU" = rgb(0.8,0.2,0.5,0.9),
+    #                          "SU" = rgb(0.4,0.7,0.9,0.9))
+    #     ) +
+    #     theme(panel.grid.major.x = element_blank(),
+    #           panel.grid.minor.x = element_blank()) +
+    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+    # })
+    # 
+    # output$Institutional_Satisfaction <- renderPlot({
+    #   ggplot(indicators[which(rownames(indicators) %in% ready),]) +
+    #     geom_col(mapping = aes(y = Institutional_Satisfaction, x = cntry), 
+    #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
+    #                          "PA" = rgb(0.7,0.5,0.1,0.9),
+    #                          "HU" = rgb(0.8,0.2,0.5,0.9),
+    #                          "SU" = rgb(0.4,0.7,0.9,0.9))
+    #     ) +
+    #     theme(panel.grid.major.x = element_blank(),
+    #           panel.grid.minor.x = element_blank()) +
+    #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+    # })
     
     observeEvent(input$redraw_satisfaction, {
       
@@ -855,16 +820,16 @@ function(input, output, session) {
         removed_satisfaction <- removed_satisfaction[removed_satisfaction != "EU"]
       }
       
-      if (input$SU_check_satisfaction == T){
-        removed_satisfaction <- removed_satisfaction %>% append("SU")
-      }else if(input$SU_check_satisfaction == F){
-        removed_satisfaction <- removed_satisfaction[removed_satisfaction != "SU"]
-      }
+      # if (input$SU_check_satisfaction == T){
+      #   removed_satisfaction <- removed_satisfaction %>% append("SU")
+      # }else if(input$SU_check_satisfaction == F){
+      #   removed_satisfaction <- removed_satisfaction[removed_satisfaction != "SU"]
+      # }
       
       if (input$own_check_satisfaction == T){
-        removed_satisfaction <- removed_satisfaction %>% append("PA")
+        removed_satisfaction <- removed_satisfaction %>% append("Own response")
       }else if(input$own_check_satisfaction == F){
-        removed_satisfaction <- removed_satisfaction[removed_satisfaction != "PA"]
+        removed_satisfaction <- removed_satisfaction[removed_satisfaction != "Own response"]
       }
       
       if (input$cntry_check_satisfaction == T){
@@ -878,53 +843,74 @@ function(input, output, session) {
       }
       
       output$radar_satisfaction <- renderPlot({
-        colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
-        colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+        colors_border = c(rgb(0.2,0.5,0.5,0.9),
+                          rgb(0.8,0.2,0.5,0.9),
+                          rgb(0.7,0.5,0.1,0.9))
         
-        radarchart(df = median_data %>% subset(cntry %nin% removed_satisfaction | cntry == selected_cntry_satisfaction) %>% select(-cntry) %>% select(imbgeco,imueclt,imwbcnt,impcntr,imdfetn,imsmetn),
-                   cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
-                   pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+        colors_in=c(rgb(0.2,0.5,0.5,0.4),
+                    rgb(0.8,0.2,0.5,0.4),
+                    rgb(0.7,0.5,0.1,0.4))
         
-        legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed_satisfaction,"Max","Min") | cntry == selected_cntry_satisfaction)), bty = "o", fill=colors_in, cex = 0.9)
+        radarchart(df = {mean_data %>% 
+                          subset(cntry %nin% removed_satisfaction | cntry == selected_cntry_satisfaction) %>% 
+            select(-cntry)}[,13:19], # %>% select(happy, stflife, frprtpl, stfdem, stfeco, stfedu, stfhlth),
+            cglcol="grey",
+            cglty=1,
+            axislabcol="grey20",
+            axistype = 5,
+            caxislabels = c(0,2,4,6,8,NA),
+            cglwd=1,
+            seg = 5,
+            pcol=colors_border,
+            pfcol=colors_in,
+            plwd=4,
+            plty=1)
+        
+        legend("topright",
+               legend = rownames(mean_data %>%
+                 subset(cntry %nin% c(removed_satisfaction,"Max","Min") | cntry == selected_cntry_satisfaction)),
+               bty = "o",
+               fill=colors_in,
+               cex = 0.9)
       })
       
-      output$Subjective_Satisfaction <- renderPlot({
-        ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_satisfaction)) +
-          geom_col(mapping = aes(y = Subjective_Satisfaction, x = cntry), 
-                   fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-                               "PA" = rgb(0.7,0.5,0.1,0.9),
-                               "CO" = rgb(0.8,0.2,0.5,0.9),
-                               "SU" = rgb(0.4,0.7,0.9,0.9))
-          ) +
-          theme(panel.grid.major.x = element_blank(),
-                panel.grid.minor.x = element_blank()) +
-          scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      })
-      
-      output$Political_Satisfaction <- renderPlot({
-        ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_satisfaction)) +
-          geom_col(mapping = aes(y = Political_Satisfaction, x = cntry), 
-                   fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-                                "PA" = rgb(0.7,0.5,0.1,0.9),
-                                "CO" = rgb(0.8,0.2,0.5,0.9),
-                                "SU" = rgb(0.4,0.7,0.9,0.9))) +
-          theme(panel.grid.major.x = element_blank(),
-                panel.grid.minor.x = element_blank()) +
-          scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      })
-      
-      
-      output$Institutional_Satisfaction <- renderPlot({
-        ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_satisfaction)) +
-          geom_col(mapping = aes(y = Institutional_Satisfaction, x = cntry), 
-                   fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-                                "PA" = rgb(0.7,0.5,0.1,0.9),
-                                "CO" = rgb(0.8,0.2,0.5,0.9),
-                                "SU" = rgb(0.4,0.7,0.9,0.9))) +
-          theme(panel.grid.major.x = element_blank(),
-                panel.grid.minor.x = element_blank()) +
-          scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      })
+      # output$Subjective_Satisfaction <- renderPlot({
+      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_satisfaction)) +
+      #     geom_col(mapping = aes(y = Subjective_Satisfaction, x = cntry), 
+      #              fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
+      #                          "PA" = rgb(0.7,0.5,0.1,0.9),
+      #                          "CO" = rgb(0.8,0.2,0.5,0.9),
+      #                          "SU" = rgb(0.4,0.7,0.9,0.9))
+      #     ) +
+      #     theme(panel.grid.major.x = element_blank(),
+      #           panel.grid.minor.x = element_blank()) +
+      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+      # })
+      # 
+      # output$Political_Satisfaction <- renderPlot({
+      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_satisfaction)) +
+      #     geom_col(mapping = aes(y = Political_Satisfaction, x = cntry), 
+      #              fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
+      #                           "PA" = rgb(0.7,0.5,0.1,0.9),
+      #                           "CO" = rgb(0.8,0.2,0.5,0.9),
+      #                           "SU" = rgb(0.4,0.7,0.9,0.9))) +
+      #     theme(panel.grid.major.x = element_blank(),
+      #           panel.grid.minor.x = element_blank()) +
+      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+      # })
+      # 
+      # 
+      # output$Institutional_Satisfaction <- renderPlot({
+      #   ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_satisfaction)) +
+      #     geom_col(mapping = aes(y = Institutional_Satisfaction, x = cntry), 
+      #              fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
+      #                           "PA" = rgb(0.7,0.5,0.1,0.9),
+      #                           "CO" = rgb(0.8,0.2,0.5,0.9),
+      #                           "SU" = rgb(0.4,0.7,0.9,0.9))) +
+      #     theme(panel.grid.major.x = element_blank(),
+      #           panel.grid.minor.x = element_blank()) +
+      #     scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
+      # })
       
     })
   } # Satisfaction

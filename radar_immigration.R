@@ -45,10 +45,10 @@ fluidPage(
                                       "Serbia (RS)" = "RS",
                                       "Slovenia (SI)" = "SI"),
                        selected = "AT"),
-           checkboxInput("EU_check_immigration", label = "Hide EU median"),
-           checkboxInput("cntry_check_immigration", label = "Hide country median"),
+           checkboxInput("EU_check_immigration", label = "Hide mean of all countries"),
+           checkboxInput("cntry_check_immigration", label = "Hide selected country"),
            #checkboxInput("SU_check_immigration", label = "Hide survey median"),
-           checkboxInput("own_check_immigration", label = "Hide own score", value = T),
+           checkboxInput("own_check_immigration", label = "Hide own response", value = T),
            actionButton("redraw_immigration", "Update plot")),
     column(1)
   ),

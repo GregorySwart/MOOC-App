@@ -14,18 +14,18 @@ fluidPage(
   ),
   fluidRow(
     column(1),
-    column(5,
+    column(8,
            plotOutput("radar_satisfaction", height = 800, width = "auto")
     ),
-    column(1,
-           plotOutput("Subjective_Satisfaction", height = 800, width = 90)
-    ),
-    column(1,
-           plotOutput("Political_Satisfaction", height = 800, width = 90)
-    ),
-    column(1,
-           plotOutput("Institutional_Satisfaction", height = 800, width = 90)
-    ),
+    # column(1,
+    #        plotOutput("Subjective_Satisfaction", height = 800, width = 90)
+    # ),
+    # column(1,
+    #        plotOutput("Political_Satisfaction", height = 800, width = 90)
+    # ),
+    # column(1,
+    #        plotOutput("Institutional_Satisfaction", height = 800, width = 90)
+    # ),
     column(2, align = "center",
            selectInput("cntry_satisfaction", "Select country",
                        choices =  list("Austria (AT)" = "AT",
@@ -48,10 +48,10 @@ fluidPage(
                                        "Serbia (RS)" = "RS",
                                        "Slovenia (SI)" = "SI"),
                        selected = "AT"),
-           checkboxInput("EU_check_satisfaction", label = "Hide EU median"),
-           checkboxInput("cntry_check_satisfaction", label = "Hide country median"),
-           checkboxInput("SU_check_satisfaction", label = "Hide survey median"),
-           checkboxInput("own_check_satisfaction", label = "Hide own score", value = T),
+           checkboxInput("EU_check_satisfaction", label = "Hide mean of all countries"),
+           checkboxInput("cntry_check_satisfaction", label = "Hide selected country"),
+           #checkboxInput("SU_check_satisfaction", label = "Hide survey median"),
+           checkboxInput("own_check_satisfaction", label = "Hide own response", value = T),
            actionButton("redraw_satisfaction", "Update plot")),
     column(1)
   ),

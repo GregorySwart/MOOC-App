@@ -12,8 +12,8 @@ prependTab(
       ),
       tabsetPanel(
         tabPanel("Overview",
-          {source("radar_overview.R")}, 
-        ), # Overview
+          {source("radar_overview.R")}, # Overview
+        ),
         tabPanel("Trust",
           {source("radar_trust.R")}, # Trust
         ),
