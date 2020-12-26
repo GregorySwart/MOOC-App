@@ -19,13 +19,13 @@ function(input, output, session) {
   removed <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
                "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
-  removed_trust <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
+  removed_trust <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
                      "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
-  removed_immigration <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
+  removed_immigration <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
                            "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
-  removed_satisfaction <- c("PA", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
+  removed_satisfaction <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
                             "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
   source("indicators.R")
@@ -320,7 +320,7 @@ function(input, output, session) {
       if(input$lrscale %nin% 0:10){state <- FALSE}
       if(hardcode == TRUE){state <- TRUE} # hard code to true to save time when testing
       if(state == TRUE){
-        prependTab(inputId = "mooc_app", 
+        prependTab(inputId = "mooc_app",
                    tab = {tabPanel("Histograms", icon = icon("chart-bar"),
                                    fluidPage(
                                      fluidRow(h1("Histograms of the survey data", align = "center")),
@@ -329,8 +329,6 @@ function(input, output, session) {
                                        column(8, offset = 2,
                                               p("In this section you can see the distribution of answers for each country by variable. The vertical 
                 blue line shows your response. If this is missing, you haven't completed the survey section."),
-                                              br(),
-                                              helpText("PLAN: add survey and EU average as vertical lines as well. Add \"All countries\" button."),
                                               hr(),
                                        )
                                      ),
@@ -397,8 +395,6 @@ function(input, output, session) {
                                               p("In this section you can see the mean response to each question, by country. The Variables are 
                 grouped into three categories: Immigration, Trust, and Satisfaction. Self placement was added to 
                 the latter to avoid having a gorup with only one variable in it."),
-                                              br(),
-                                              helpText("PLAN: Replace variable codes with better text, improve labeling and add dynamic title."),
                                               hr()
                                        )
                                      ),
@@ -463,6 +459,13 @@ function(input, output, session) {
                   session = session)
         for (i in 1:length(stat_variables)){
           mean_data["Own response", i] <<- as.numeric(input[[stat_variables[i]]])
+        }
+        if(hardcode == TRUE){ # simulate responses when answers are left blank for testing
+          for (i in 1:length(stat_variables)){
+            if(is.na(mean_data["Own response", i]) == TRUE){
+              mean_data["Own response", i] <<- runif(1, 0, 3) %>% round(0)
+            }
+          }
         }
       }else{
         updateActionButton(session = session,
@@ -560,14 +563,34 @@ function(input, output, session) {
   
   {
     output$radar_trust <- renderPlot({
-      colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9), "SU" = rgb(0.4,0.7,0.9,0.7) )
-      colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4), rgb(0.4,0.7,0.9,0.3)  )
+      colors_border=c(rgb(0.2,0.5,0.5,0.9), 
+                      rgb(0.8,0.2,0.5,0.9), 
+                      rgb(0.7,0.5,0.1,0.9))
       
-      radarchart(df = median_data %>% subset(cntry %nin% removed_trust | cntry == "AT") %>% select(-cntry) %>% select(pplfair,pplhlp,trstprl,trstep,trstlgl,ppltrst), 
-                 cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
-                 pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+      colors_in = c(rgb(0.2,0.5,0.5,0.4),
+                    rgb(0.8,0.2,0.5,0.4),
+                    rgb(0.7,0.5,0.1,0.4))
       
-      legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed_trust,"Max","Min") | cntry == "AT")), bty = "o", fill=colors_in, cex = 0.9)
+      radarchart(df = {mean_data %>% subset(cntry %nin% removed_trust | cntry == "AT") %>%
+                   select(-cntry)}[,1:6], # %>% select(pplfair,pplhlp,trstprl,trstep,trstlgl,ppltrst), 
+                 cglcol="grey",
+                 cglty=1,
+                 axislabcol="grey20",
+                 axistype = 5,
+                 caxislabels = c(0,2,4,6,8,NA),
+                 cglwd = 1,
+                 seg = 5,
+                 pcol = colors_border, 
+                 pfcol = colors_in, 
+                 plwd = 4, 
+                 plty = 1)
+      
+      legend("topright",
+             legend = rownames(mean_data %>% 
+                                 subset(cntry %nin% c(removed_trust,"Max","Min") | cntry == "AT")),
+             bty = "o",
+             fill=colors_in,
+             cex = 0.9)
     })
     
     observeEvent(input$redraw_trust, {
@@ -578,16 +601,10 @@ function(input, output, session) {
         removed_trust <- removed_trust[removed_trust != "EU"]
       }
       
-      if (input$SU_check_trust == T){
-        removed_trust <- removed_trust %>% append("SU")
-      }else if(input$SU_check_trust == F){
-        removed_trust <- removed_trust[removed_trust != "SU"]
-      }
-      
       if (input$own_check_trust == T){
-        removed_trust <- removed_trust %>% append("PA")
+        removed_trust <- removed_trust %>% append("Own response")
       }else if(input$own_check_trust == F){
-        removed_trust <- removed_trust[removed_trust != "PA"]
+        removed_trust <- removed_trust[removed_trust != "Own response"]
       }
       
       if (input$cntry_check_trust == T){
@@ -601,66 +618,35 @@ function(input, output, session) {
       }
       
       output$radar_trust <- renderPlot({
-        colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9), "SU" = rgb(0.4,0.7,0.9,0.7) )
-        colors_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4), rgb(0.4,0.7,0.9,0.3)  )
+        colors_border = c(rgb(0.2,0.5,0.5,0.9),
+                          rgb(0.8,0.2,0.5,0.9),
+                          rgb(0.7,0.5,0.1,0.9))
         
-        radarchart(df = median_data %>% subset(cntry %nin% removed_trust | cntry == selected_cntry_trust) %>% select(-cntry) %>% select(pplfair,pplhlp,trstprl,trstep,trstlgl,ppltrst), 
-                   cglcol="grey", cglty=1, axislabcol="grey20", axistype = 5, caxislabels = c(0,2,4,6,8,NA), cglwd=1, seg = 5,
-                   pcol=colors_border , pfcol=colors_in , plwd=4 , plty=1)
+        colors_in=c( rgb(0.2,0.5,0.5,0.4),
+                     rgb(0.8,0.2,0.5,0.4), 
+                     rgb(0.7,0.5,0.1,0.4))
         
-        legend("topright", legend = rownames(median_data %>% subset(cntry %nin% c(removed_trust,"Max","Min") | cntry == selected_cntry_trust)), bty = "o", fill=colors_in, cex = 0.9)
+        radarchart(df = {mean_data %>% subset(cntry %nin% removed_trust | cntry == selected_cntry_trust) %>% 
+                     select(-cntry)}[,1:6], # %>% select(pplfair,pplhlp,trstprl,trstep,trstlgl,ppltrst), 
+                   cglcol="grey",
+                   cglty=1,
+                   axislabcol="grey20",
+                   axistype = 5,
+                   caxislabels = c(0,2,4,6,8,NA),
+                   cglwd=1,
+                   seg = 5,
+                   pcol=colors_border,
+                   pfcol=colors_in,
+                   plwd=4,
+                   plty=1)
+        
+        legend("topright",
+               legend = rownames(mean_data %>%
+                                   subset(cntry %nin% c(removed_trust,"Max","Min") | cntry == selected_cntry_trust)),
+               bty = "o",
+               fill=colors_in,
+               cex = 0.9)
       })
-      
-      output$trust_indicators_individual <- renderPlot({
-        ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_trust)) +
-          geom_col(mapping = aes(y = Individual_Trust, x = cntry), 
-                   fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-                               "PA" = rgb(0.7,0.5,0.1,0.9),
-                               "CO" = rgb(0.8,0.2,0.5,0.9),
-                               "SU" = rgb(0.4,0.7,0.9,0.9))
-          ) +
-          theme(panel.grid.major.x = element_blank(),
-                panel.grid.minor.x = element_blank()) +
-          scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      })
-      
-      output$trust_indicators_institutional <- renderPlot({
-        ggplot(indicators %>% subset(cntry %in% c("EU","SU","PA") | cntry == selected_cntry_trust)) +
-          geom_col(mapping = aes(y = Institutional_Trust, x = cntry), 
-                   fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-                                "PA" = rgb(0.7,0.5,0.1,0.9),
-                                "CO" = rgb(0.8,0.2,0.5,0.9),
-                                "SU" = rgb(0.4,0.7,0.9,0.9))) +
-          theme(panel.grid.major.x = element_blank(),
-                panel.grid.minor.x = element_blank()) +
-          scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-      })
-      
-    })
-    
-    output$trust_indicators_individual <- renderPlot({
-      ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-        geom_col(mapping = aes(y = Individual_Trust, x = cntry), 
-                 fill = list("EU" = rgb(0.2,0.5,0.5,0.9),
-                             "PA" = rgb(0.7,0.5,0.1,0.9),
-                             "HU" = rgb(0.8,0.2,0.5,0.9),
-                             "SU" = rgb(0.4,0.7,0.9,0.9))
-        ) +
-        theme(panel.grid.major.x = element_blank(),
-              panel.grid.minor.x = element_blank()) +
-        scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
-    })
-    
-    output$trust_indicators_institutional <- renderPlot({
-      ggplot(indicators[which(rownames(indicators) %in% ready),]) +
-        geom_col(mapping = aes(y = Institutional_Trust, x = cntry), 
-                 fill =  list("EU" = rgb(0.2,0.5,0.5,0.9),
-                              "PA" = rgb(0.7,0.5,0.1,0.9),
-                              "HU" = rgb(0.8,0.2,0.5,0.9),
-                              "SU" = rgb(0.4,0.7,0.9,0.9))) +
-        theme(panel.grid.major.x = element_blank(),
-              panel.grid.minor.x = element_blank()) +
-        scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 1))
     })
   } # Trust
   
