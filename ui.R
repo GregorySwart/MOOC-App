@@ -3,21 +3,47 @@ source("texts.R")
 shinyUI(
   navbarPage(title = "MOOC App", id = "mooc_app", collapsible = TRUE, selected = "introduction",
     theme = shinythemes::shinytheme("sandstone"),
-      {tabPanel(title = "Introduction", value = "introduction", icon = icon("chevron-circle-right"),
+    {tabPanel(title = "Introduction", value = "introduction", icon = icon("chevron-circle-right"),
+      shinyalert::useShinyalert(),
+      fluidRow(
+        column(8, offset = 2, align = "center",
+          h1("Introduction", align = "center"),
+          br(),
+          h4(textlist$intro1, align = "center"),
+          br(),
+          h4(textlist$intro2, align = "center"),
+          br(),
+          actionButton(inputId = "end_intro", label = "Begin questionnaire")
+        ),
+      ),
+    )}, # Introduction
+    {tabPanel(title = "Data", value = "data", icon = icon("align-left"),
+      fluidPage(
         fluidRow(
           column(8, offset = 2, align = "center",
-            h1("Introduction", align = "center"),
+            h1("Data and Information"),
             br(),
-            h4(textlist$intro1, align = "center"),
-            br(),
-            h4(textlist$intro2, align = "center"),
-            br(),
-            actionButton(inputId = "end_intro", label = "Begin questionnaire")
+            p(textlist$data1),
+            hr()
           ),
-        ),
-      )}, # Introduction
-    {tabPanel(title = "Data", value = "data", icon = icon("align-left"),
-      p("This tabPanel is not finished yet")
+          column(8, offset = 2, align = "center",
+            h3("Download the dataset used"),
+            br(),
+            p(textlist$data2, tags$a(href="https://www.europeansocialsurvey.org/", "https://www.europeansocialsurvey.org/")),
+            br(),
+            downloadButton(outputId = "downloadData", label = "Download .csv"),
+            hr()
+          ),
+          column(8, offset = 2, align = "center",
+            h3("Changes made to variable scaling"),
+            br(),
+            p(textlist$data3),
+            br(),
+            p(textlist$data4),
+            hr()
+          )
+        )
+      )
     )}
   )
 )

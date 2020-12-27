@@ -1,6 +1,6 @@
 prependTab(
   inputId = "mooc_app",
-  tab = tabPanel(title = "Radar charts", value = "radar_charts", icon = icon("certificate"),
+  tab = {tabPanel(title = "Radar charts", value = "radar_charts", icon = icon("certificate"),
     fluidPage(
       fluidRow(
         column(10, offset = 1, align = "center",
@@ -25,5 +25,5 @@ prependTab(
         )
       )
     ),
-  )
+  )} # Radar Charts
 )

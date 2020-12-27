@@ -182,6 +182,22 @@ function(input, output, session) {
         removeTab(inputId = "mooc_app",
                   target = "survey_trust",
                   session = session)
+        shinyalert(
+          title = "Adjusted Scales",
+          text = "Some variable scalings have been adjusted for consistency. See specifics in the \"Data\" tab on the top right. Affected variables are numbers 10, 11, 12 and 15.",
+          size = "s", 
+          closeOnEsc = TRUE,
+          closeOnClickOutside = TRUE,
+          html = FALSE,
+          type = "info",
+          showConfirmButton = TRUE,
+          showCancelButton = FALSE,
+          confirmButtonText = "OK",
+          confirmButtonCol = "#808080",
+          timer = 0,
+          imageUrl = "",
+          animation = FALSE
+        )
       }else{
         updateActionButton(inputId = "end_trust", session = session, 
                            label = "Please answer all of the questions to continue")
@@ -322,143 +338,13 @@ function(input, output, session) {
       if(input$lrscale %nin% 0:10){state <- FALSE}
       if(hardcode == TRUE){state <- TRUE} # hard code to true to save time when testing
       if(state == TRUE){
-        prependTab(inputId = "mooc_app",
-                   tab = {tabPanel("Histograms", icon = icon("chart-bar"),
-                                   fluidPage(
-                                     fluidRow(h1("Histograms of the survey data", align = "center")),
-                                     hr(),
-                                     fluidRow(
-                                       column(8, offset = 2,
-                                              p("In this section you can see the distribution of answers for each country by variable. The vertical 
-                blue line shows your response. If this is missing, you haven't completed the survey section."),
-                                              hr(),
-                                       )
-                                     ),
-                                     fluidRow(
-                                       column(2, offset = 1,
-                                              selectInput("histvar", label = "please select a variable to display", 
-                                                          choices = list("Trust" =        list("Trust in people" = "ppltrst",
-                                                                                               "Fairness of people" = "pplfair",
-                                                                                               "Helpfulness of people" = "pplhlp",
-                                                                                               "Trust in own country's parliament" = "trstprl",
-                                                                                               "Trust in European Parliament" = "trstep",
-                                                                                               "Trust in own country's legal system" = "trstlgl"),
-                                                                         "Immigration" =  list("Immigration perception (economic)" = "imbgeco",
-                                                                                               "Immigration perception (cultural)" = "imueclt",
-                                                                                               "Immigration perception (better/worse)" = "imwbcnt",
-                                                                                               "Immigration attitude (poorer countries outside of Europe)" = "impcntr",
-                                                                                               "Immigration attitude (same race)" = "imsmetn",
-                                                                                               "Immigration attitude (different race)" = "imdfetn"),
-                                                                         "Satisfaction" = list("General happness" = "happy",
-                                                                                               "Satisfaction with life" = "stflife",
-                                                                                               "Fair chance to participate in politics" = "frprtpl",
-                                                                                               "Satisfaction with democracy" = "stfdem",
-                                                                                               "Satisfaction with economy" = "stfeco",
-                                                                                               "Satisfaction with education system" = "stfedu",
-                                                                                               "Satisfaction with healthcare" = "stfhlth"),
-                                                                         "Other" =        list("Self placement on left-right scale" = "lrscale"))
-                                              ),
-                                              selectInput("histdata", label = "Please select reference data frame",
-                                                          choices = list("Austria (AT)" = "AT",
-                                                                         "Belgium (BE)" = "BE", 
-                                                                         "Bulgaria (BG)" = "BG",
-                                                                         "Switzerland (CH)" = "CH",
-                                                                         "Cyprus (CY)" = "CY",
-                                                                         "Czechia (CZ)"= "CZ",
-                                                                         "Germany (DE)" = "DE",
-                                                                         "Estonia (EE)" = "EE",
-                                                                         "Finland (FI)" = "FI",
-                                                                         "France (FR)" = "FR",
-                                                                         "United Kingdom (GB)" = "GB",
-                                                                         "Hungary (HU)" = "HU",
-                                                                         "Ireland (IE)" = "IE",
-                                                                         "Italy (IT)" = "IT",
-                                                                         "Netherlands (NL)" = "NL",
-                                                                         "Norway (NO)" = "NO",
-                                                                         "Poland (PL)" = "PL",
-                                                                         "Serbia (RS)" = "RS",
-                                                                         "Slovenia (SI)" = "SI")
-                                              )
-                                       ),
-                                       column(6,
-                                              plotOutput("svyhist")
-                                       )
-                                     )
-                                   )
-                   )}, # HISTOGRAMS
-                   session = session)
-        prependTab(inputId = "mooc_app",
-                   tab = {tabPanel("Circular bar charts",  icon = icon("adjust"),
-                                   fluidPage(
-                                     fluidRow(h1("Circular bar charts of the survey data", align = "center")),
-                                     hr(),
-                                     fluidRow(
-                                       column(8, offset = 2,
-                                              p("In this section you can see the mean response to each question, by country. The Variables are 
-                grouped into three categories: Immigration, Trust, and Satisfaction. Self placement was added to 
-                the latter to avoid having a gorup with only one variable in it."),
-                                              hr()
-                                       )
-                                     ),
-                                     fluidRow(
-                                       column(2, offset = 1,
-                                              # selectInput("barvar", label = "please select a variable to display", 
-                                              #             choices = list("Trust" =        list("Trust in people" = "ppltrst",
-                                              #                                                  "Fairness of people" = "pplfair",
-                                              #                                                  "Helpfulness of people" = "pplhlp",
-                                              #                                                  "Trust in own country's parliament" = "trstprl",
-                                              #                                                  "Trust in European Parliament" = "trstep",
-                                              #                                                  "Trust in own country's legal system" = "trstlgl"),
-                                              #                            "Immigration" =  list("Immigration perception (economic)" = "imbgeco",
-                                              #                                                  "Immigration perception (cultural)" = "imueclt",
-                                              #                                                  "Immigration perception (better/worse)" = "imwbcnt",
-                                              #                                                  "Immigration attitude (poorer countries outside of Europe)" = "impcntr",
-                                              #                                                  "Immigration attitude (same race)" = "imsmetn",
-                                              #                                                  "Immigration attitude (different race)" = "imdfetn"),
-                                              #                            "Satisfaction" = list("General happness" = "happy",
-                                              #                                                  "Satisfaction with life" = "stflife",
-                                              #                                                  "Fair chance to participate in politics" = "frprtpl",
-                                              #                                                  "Satisfaction with democracy" = "stfdem",
-                                              #                                                  "Satisfaction with economy" = "stfeco",
-                                              #                                                  "Satisfaction with education system" = "stfedu",
-                                              #                                                  "Satisfaction with healthcare" = "stfhlth"),
-                                              #                            "Other" =        list("Self placement on left-right scale" = "lrscale"))
-                                              # ),
-                                              selectInput("bardata", label = "Please select reference data frame",
-                                                          choices = list("Austria (AT)" = "AT",
-                                                                         "Belgium (BE)" = "BE", 
-                                                                         "Bulgaria (BG)" = "BG",
-                                                                         "Switzerland (CH)" = "CH",
-                                                                         "Cyprus (CY)" = "CY",
-                                                                         "Czechia (CZ)"= "CZ",
-                                                                         "Germany (DE)" = "DE",
-                                                                         "Estonia (EE)" = "EE",
-                                                                         "Finland (FI)" = "FI",
-                                                                         "France (FR)" = "FR",
-                                                                         "United Kingdom (GB)" = "GB",
-                                                                         "Hungary (HU)" = "HU",
-                                                                         "Ireland (IE)" = "IE",
-                                                                         "Italy (IT)" = "IT",
-                                                                         "Netherlands (NL)" = "NL",
-                                                                         "Norway (NO)" = "NO",
-                                                                         "Poland (PL)" = "PL",
-                                                                         "Serbia (RS)" = "RS",
-                                                                         "Slovenia (SI)" = "SI")
-                                              )
-                                       ),
-                                       column(6,
-                                              plotOutput("svybar", height = 550)
-                                       )
-                                     )
-                                   )
-                   )}, # CIRCULAR BAR CHARTS
-                   session = session)
+        source("histograms.R") # HISTOGRAMS
+        source("circular_bar_charts.R") # CIRCULAR BAR CHARTS
         source("radar_charts.R") # RADAR CHARTS
         updateNavbarPage(session = session, inputId = "mooc_app",
                          selected = "radar_charts")
         removeTab(inputId = "mooc_app",
-                  target = "survey_lrscale",
-                  session = session)
+                  target = "survey_lrscale")
         for (i in 1:length(stat_variables)){
           mean_data["Own response", i] <<- as.numeric(input[[stat_variables[i]]])
         }
@@ -527,11 +413,6 @@ function(input, output, session) {
       }else if(input$cntry_check == F){
         selected_cntry <- input$cntry_radar_all
       }
-      
-      # THE ERROR COMES FROM THIS
-      # for (i in stat_variables){
-      #   mean_data["PA",i] <- as.numeric(input[[i]])
-      # }
       
       output$radar_all <- renderPlot({
         
@@ -615,10 +496,6 @@ function(input, output, session) {
       }else if(input$cntry_check_trust == F){
         selected_cntry_trust <- input$cntry_trust
       }
-      
-      # for (i in stat_variables){
-      #   mean_data["PA",i] <- as.numeric(input[[i]])
-      # }
       
       output$radar_trust <- renderPlot({
         colors_border = c(rgb(0.2,0.5,0.5,0.9),
@@ -796,10 +673,6 @@ function(input, output, session) {
         selected_cntry_satisfaction <- input$cntry_satisfaction
       }
       
-      # for (i in stat_variables){
-      #   mean_data["PA",i] <- as.numeric(input[[i]])
-      # }
-      
       output$radar_satisfaction <- renderPlot({
         colors_border = c(rgb(0.2,0.5,0.5,0.9),
                           rgb(0.8,0.2,0.5,0.9),
@@ -937,4 +810,14 @@ function(input, output, session) {
     
     p1
   }) # Circular barplots tab
+  
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("ESS9_data-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(ess_data, file)
+    }
+  )
 }
