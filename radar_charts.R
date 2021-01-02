@@ -3,8 +3,17 @@ prependTab(
   tab = {tabPanel(title = "Radar charts", value = "radar_charts", icon = icon("certificate"),
     fluidPage(
       fluidRow(
-        column(10, offset = 1, align = "center",
-          h1("Radar charts"),
+        column(12, offset = 0, align = "center",
+          fluidRow(align = "center",
+            column(1, offset = 3),
+            column(4, align = "center",
+              h1("Radar charts"), align = "center"
+            ),
+            column(1, align = "center",
+              br(),
+              actionButton(inputId = "radar_right", label = "Jump Right", icon = icon("angle-double-right"))
+            )
+          ),
           hr(),
           p(textlist$radar_intro),
           br()

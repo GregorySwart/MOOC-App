@@ -4,7 +4,7 @@ function(input, output, session) {
   # Data load and cleanup #
   #=======================#
   
-  hardcode <- TRUE # set this to TRUE when testing to skip through the questionnaire
+  hardcode <- FALSE # set this to TRUE when testing to skip through the questionnaire
   
   source("libraries.R") # load in libraries
   source("texts.R")
@@ -338,6 +338,8 @@ function(input, output, session) {
       if(input$lrscale %nin% 0:10){state <- FALSE}
       if(hardcode == TRUE){state <- TRUE} # hard code to true to save time when testing
       if(state == TRUE){
+        source("map_drawer.R")
+        source("country_comparison.R")
         source("histograms.R") # HISTOGRAMS
         source("circular_bar_charts.R") # CIRCULAR BAR CHARTS
         source("radar_charts.R") # RADAR CHARTS
@@ -759,6 +761,12 @@ function(input, output, session) {
     my_data <- my_data %>% arrange(group)
     my_data$id <- seq(1, nrow(my_data))
     
+    # Adjust variables which have different scaling
+    my_data[4,"value"]  <- 3.33 * my_data[4,"value"]
+    my_data[5,"value"]  <- 3.33 * my_data[5,"value"]
+    my_data[6,"value"]  <- 3.33 * my_data[6,"value"]
+    my_data[14,"value"] <- 2.5  * my_data[14,"value"]
+    
     my_label_data <- my_data
     nbar <- nrow(my_label_data)
     my_angle <-  90 - 360 * (my_label_data$id-0.5) /nbar
@@ -780,33 +788,71 @@ function(input, output, session) {
     grid_data[1,3] <- 34
     #grid_data <- grid_data[-1,]
     
-    p1 <- ggplot(my_data, aes(x=as.factor(id), y=value, fill = group)) +
-      geom_bar(stat="identity", alpha = 0.7, width=0.6) +
-      # Add a val=100/75/50/25 lines. I do it at the beginning to make sur barplots are OVER it.
+    my_data$source <- "country"
+    
+    own_data <- my_data
+    own_data$source <- "self"
+    
+    for (i in 1:3){
+      own_data[i,"value"] <- input[[immigration_variables[i]]] %>% as.numeric()
+    }
+    
+    for (i in 4:6){
+      own_data[i,"value"] <- 3.33 * (input[[immigration_variables[i]]] %>% as.numeric())
+    }
+    
+    for (i in 1:6){
+      own_data[i + 24,"value"] <- input[[trust_variables[i]]] %>% as.numeric()
+    }
+    
+    for (i in 1:7){
+      own_data[i + 11,"value"] <- input[[satisfaction_variables[i]]] %>% as.numeric()
+    }
+    
+    own_data[14,"value"] <- 2.5 * (input$frprtpl %>% as.numeric())
+    own_data[19,"value"] <- input$lrscale %>% as.numeric()
+    
+    my_data1 <- rbind(my_data, own_data)
+    
+    for (i in 1:6){
+      my_label_data[i,3] <- max(my_data1[which(my_data1$var == immigration_variables[i]),3])
+    }
+    
+    for (i in 1:6){
+      my_label_data[i + 24,3] <- max(my_data1[which(my_data1$var == trust_variables[i]),3])
+    }
+    
+    for (i in 1:7){
+      my_label_data[i + 11,3] <- max(my_data1[which(my_data1$var == satisfaction_variables[i]),3])
+    }
+    
+    my_label_data[19,"value"] <- max(my_data1[which(my_data1$var == "lrscale"),3])
+    
+    p1 <- ggplot(my_data1, aes(x=as.factor(id), y=value, fill = source, color = group)) +
+      geom_bar(stat="identity", alpha = 0.7, width=0.6, position = "dodge", size = 1.1) +
+      # Add a val=100/75/50/25 lines. I do it at the beginning to make sure barplots are OVER it.
       geom_segment(data=grid_data, aes(x = end, y = 8, xend = start, yend = 8), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
       geom_segment(data=grid_data, aes(x = end, y = 6, xend = start, yend = 6), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
       geom_segment(data=grid_data, aes(x = end, y = 4, xend = start, yend = 4), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
       geom_segment(data=grid_data, aes(x = end, y = 2, xend = start, yend = 2), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
       
       # Add text showing the value of each 100/75/50/25 lines
-      annotate("text", x = rep(max(my_data$id),4), y = c(2, 4, 6, 8), label = c("2", "4", "6", "8") , color="grey", size=3 , angle=0, fontface="bold", hjust=1) +
-      ylim(-5,10) +
+      annotate("text", x = rep(max(my_data$id),4), y = c(2, 4, 6, 8), label = c("2", "4", "6", "8") , color="grey20", size=3 , angle=0, fontface="bold", hjust=1) +
+      ylim(-5,11) +
       theme_minimal() +
       theme(
-        legend.position = c(0.8,0.8),
+        legend.position = c(0.1,0.8),
         axis.text = element_blank(),
         axis.title = element_blank(),
         panel.grid = element_blank(),
-        plot.margin = unit(rep(-1,4), "cm")
+        plot.margin = unit(rep(-1,4), "cm"),
+        legend.title = 
       ) +
       coord_polar(start = 0) +
       geom_text(data=my_label_data, aes(x=id, y=value+0.5, label=var, hjust=hjust), color="black", 
                 fontface="bold",alpha=0.6, size=4, angle= my_label_data$angle, inherit.aes = FALSE ) +
       geom_segment(data=base_data, aes(x = start, y = -1, xend = end, yend = -1), colour = "black", 
                    alpha=0.8, size=1.5 , inherit.aes = FALSE )
-    # geom_text(data=base_data, aes(x = title, y = -1.8, label=group), hjust=c(1,1,0), 
-    #           colour = "black", alpha=0.8, size=4, fontface="bold", inherit.aes = FALSE)
-    
     
     p1
   }) # Circular barplots tab
@@ -820,4 +866,71 @@ function(input, output, session) {
       write.csv(ess_data, file)
     }
   )
+  
+  # Left and Right Jump Buttons
+  {
+    observeEvent(input$radar_right, {
+      updateTabsetPanel(
+        session = session,
+        inputId = "mooc_app",
+        selected = "circular_bar_charts"
+      )
+    })
+    
+    observeEvent(input$circular_left, {
+      updateTabsetPanel(
+        session = session,
+        inputId = "mooc_app",
+        selected = "radar_charts"
+      )
+    })
+    
+    observeEvent(input$circular_right, {
+      updateTabsetPanel(
+        session = session,
+        inputId = "mooc_app",
+        selected = "histograms"
+      )
+    })
+    
+    observeEvent(input$histograms_left, {
+      updateTabsetPanel(
+        session = session,
+        inputId = "mooc_app",
+        selected = "circular_bar_charts"
+      )
+    })
+    
+    observeEvent(input$histograms_right, {
+      updateTabsetPanel(
+        session = session,
+        inputId = "mooc_app",
+        selected = "country_comparison"
+      )
+    })
+    
+    observeEvent(input$country_left, {
+      updateTabsetPanel(
+        session = session,
+        inputId = "mooc_app",
+        selected = "histograms"
+      )
+    })
+    
+    observeEvent(input$country_right, {
+      updateTabsetPanel(
+        session = session,
+        inputId = "mooc_app",
+        selected = "map_drawer"
+      )
+    })
+    
+    observeEvent(input$map_left, {
+      updateTabsetPanel(
+        session = session,
+        inputId = "mooc_app",
+        selected = "country_comparison"
+      )
+    })
+  }
 }
