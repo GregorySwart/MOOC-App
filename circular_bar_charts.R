@@ -17,13 +17,17 @@ prependTab(inputId = "mooc_app",
       hr(),
       fluidRow(
         column(8, offset = 2, align = "center",
-          p(textlist$circular_intro),
+          p(textlist$circular_intro)
+        )
+      ),
+      fluidRow(
+        column(10, offset = 1,
           hr()
         )
       ),
       fluidRow(
-        column(2, offset = 1,
-          selectInput("bardata", label = "Please select reference data frame",
+        column(2, offset = 1, align = "center",
+          selectInput("bardata", label = "Please select country",
             choices = list( "Austria (AT)" = "AT",
                             "Belgium (BE)" = "BE", 
                             "Bulgaria (BG)" = "BG",
@@ -45,18 +49,8 @@ prependTab(inputId = "mooc_app",
                             "Slovenia (SI)" = "SI")
           )
         ),
-        column(6,
-          plotOutput("svybar", height = 550)
-        )
-      ),
-      fluidRow(
-        column(12, align = "center",
-          br(),
-          br(),
-          br(),
-          br(),
-          br(),
-          br(),
+        column(8,
+          plotOutput("svybar", height = 650)
         )
       )
     )

@@ -4,7 +4,7 @@ function(input, output, session) {
   # Data load and cleanup #
   #=======================#
   
-  hardcode <- TRUE # set this to TRUE when testing to skip through the questionnaire
+  hardcode <- FALSE # set this to TRUE when testing to skip through the questionnaire
   
   source("libraries.R") # load in libraries
   source("texts.R")
@@ -210,7 +210,7 @@ function(input, output, session) {
                                                           selected = "Please select...",
                                                           text = "All things considered, how satisfied are you with your life as a whole nowadays? Please answer the slider to the left, where 0 means extremely dissatisfied and 10 means extremely satisfied."),
                                              ess_selector(ID = "frprtpl", label = "15. Political fairness",
-                                                          choices = c("Please select..." = NA,0:5),
+                                                          choices = c("Please select..." = NA,0:4),
                                                           selected = "Please select...",
                                                           text = "How much would you say that the political system in country ensures that everyone has a fair chance to participate in politics? (0 = Not at all, 4 = A great deal)"),
                                              ess_selector(ID = "stfdem", label = "16. Satisfaction with democracy",
@@ -822,10 +822,12 @@ function(input, output, session) {
       geom_text(data=my_label_data, aes(x=id, y=value+0.5, label=var, hjust=hjust), color="black", 
                 fontface="bold",alpha=0.6, size=4, angle= my_label_data$angle, inherit.aes = FALSE ) +
       geom_segment(data=base_data, aes(x = start, y = -1, xend = end, yend = -1), colour = "black", 
-                   alpha=0.8, size=1.5 , inherit.aes = FALSE )
+                   alpha=0.8, size=1.5 , inherit.aes = FALSE ) +
+      labs(fill = "Answer source", col = "Variable grouping")
     
     p1
   }) # Circular barplots tab
+  
   
   output$country_comparison_plot <- renderPlot({
     variable <- input$country_comparison_variable
@@ -866,7 +868,45 @@ function(input, output, session) {
       ylab("Mean value of responses") 
     # +
     #   ylim(variable_limits[[input$country_comparison_variable]])
+  }) # Country comparison column plot
+  
+  
+  output$map <- renderPlot({
+    world <- ne_countries(scale = "medium", returnclass = "sf")
+    
+    world_trimmed <- world %>% subset(iso_a2 %in% countries)
+    
+    world_trimmed$var <- runif(19,0,10)
+    
+    data <- mean_data_long %>% subset(cntry %in% countries) %>% subset(var == input$map_var)
+    
+    world_trimmed$var <- (data$value - as.numeric(input[[input$map_var]])) %>% round(2)
+    world_trimmed$var_raw <- data$value %>% round(2)
+    
+    points <- sf::st_point_on_surface(world_trimmed)
+    points_coords <- as.data.frame(sf::st_coordinates(points))
+    points_coords$value <- world_trimmed$var
+    
+    world_trimmed$X <- points_coords$X
+    world_trimmed$Y <- points_coords$Y
+    
+    world_trimmed$X[[which(world_trimmed$iso_a2 == "NO")]] <- 20
+    world_trimmed$Y[[which(world_trimmed$iso_a2 == "NO")]] <- 61
+    
+    ggplot() +
+      geom_sf(data = world,fill = "grey40") +
+      xlim(-26,50) +
+      ylim(37,70) +
+      geom_sf(data = world_trimmed, aes(fill = var)) +
+      labs(fill = "Variable difference") +
+      scale_fill_gradient2(low = "darkblue", high = "red4") +
+      geom_sf_text(data = world_trimmed, aes(X, Y, label = var_raw), colour = "black") +
+      theme(legend.position = c(0.93,0.5),
+            axis.title = element_blank(),
+            axis.ticks = element_blank(),
+            axis.text = element_blank())
   })
+  
   
   output$downloadData <- downloadHandler(
     filename = function() {

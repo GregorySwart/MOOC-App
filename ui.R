@@ -3,7 +3,7 @@ source("texts.R")
 shinyUI(
   navbarPage(title = "MOOC App", id = "mooc_app", collapsible = TRUE, selected = "introduction",
     theme = shinythemes::shinytheme("sandstone"),
-    {tabPanel(title = "Introduction", value = "introduction", icon = icon("chevron-circle-right"),
+    {tabPanel(title = "Introduction", value = "introduction", icon = icon("play-circle"),
       shinyalert::useShinyalert(),
       fluidRow(
         column(8, offset = 2, align = "center",
@@ -41,6 +41,11 @@ shinyUI(
             br(),
             p(textlist$data4),
             hr()
+          )
+        ),
+        fluidRow(
+          column(8, offset = 2, align = "center",
+            helpText("MOOC App 1.0 developed and designed by Gregory Swart")
           )
         )
       )

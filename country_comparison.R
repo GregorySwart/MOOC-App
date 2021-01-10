@@ -13,49 +13,50 @@ prependTab(inputId = "mooc_app",
                br(),
                actionButton(inputId = "country_right", label = "Jump Right", icon = icon("angle-double-right"))
         ),
-        hr()
       ),
+      hr(),
       fluidRow(align = "center",
         column(8, offset = 2, align ="center",
-          hr(),
-          p(textlist$country_comparison_intro) 
+          p(textlist$country_comparison_intro)
+        )
+      ),
+      fluidRow(
+        column(10, offset = 1,
+          hr()
         )
       ),
       fluidRow(align = "center",
-        column(8, offset = 2,
+        column(2, offset = 1,
+               selectInput(
+                 inputId = "country_comparison_variable", 
+                 label = "Select a variable to display",
+                 choices = list(
+                   "Trust" =        list("Trust in people" = "ppltrst",
+                                         "Fairness of people" = "pplfair",
+                                         "Helpfulness of people" = "pplhlp",
+                                         "Trust in own country's parliament" = "trstprl",
+                                         "Trust in European Parliament" = "trstep",
+                                         "Trust in own country's legal system" = "trstlgl"),
+                   "Immigration" =  list("Immigration perception (economic)" = "imbgeco",
+                                         "Immigration perception (cultural)" = "imueclt",
+                                         "Immigration perception (better/worse)" = "imwbcnt",
+                                         "Immigration attitude (poorer countries outside of Europe)" = "impcntr",
+                                         "Immigration attitude (same race)" = "imsmetn",
+                                         "Immigration attitude (different race)" = "imdfetn"),
+                   "Satisfaction" = list("General happness" = "happy",
+                                         "Satisfaction with life" = "stflife",
+                                         "Fair chance to participate in politics" = "frprtpl",
+                                         "Satisfaction with democracy" = "stfdem",
+                                         "Satisfaction with economy" = "stfeco",
+                                         "Satisfaction with education system" = "stfedu",
+                                         "Satisfaction with healthcare" = "stfhlth"),
+                   "Other" =        list("Self placement on left-right scale" = "lrscale")
+                 ),
+               )
+        ),
+        column(8,
           plotOutput("country_comparison_plot")
         ),
-      ),
-      fluidRow(
-        column(8, offset = 2, align = "center",
-          br(),
-          selectInput(
-            inputId = "country_comparison_variable", 
-            label = "Please select a variable to display",
-            choices = list(
-              "Trust" =        list("Trust in people" = "ppltrst",
-                                    "Fairness of people" = "pplfair",
-                                    "Helpfulness of people" = "pplhlp",
-                                    "Trust in own country's parliament" = "trstprl",
-                                    "Trust in European Parliament" = "trstep",
-                                    "Trust in own country's legal system" = "trstlgl"),
-              "Immigration" =  list("Immigration perception (economic)" = "imbgeco",
-                                    "Immigration perception (cultural)" = "imueclt",
-                                    "Immigration perception (better/worse)" = "imwbcnt",
-                                    "Immigration attitude (poorer countries outside of Europe)" = "impcntr",
-                                    "Immigration attitude (same race)" = "imsmetn",
-                                    "Immigration attitude (different race)" = "imdfetn"),
-              "Satisfaction" = list("General happness" = "happy",
-                                    "Satisfaction with life" = "stflife",
-                                    "Fair chance to participate in politics" = "frprtpl",
-                                    "Satisfaction with democracy" = "stfdem",
-                                    "Satisfaction with economy" = "stfeco",
-                                    "Satisfaction with education system" = "stfedu",
-                                    "Satisfaction with healthcare" = "stfhlth"),
-              "Other" =        list("Self placement on left-right scale" = "lrscale")
-            ),
-          )
-        )
       ),
         br(),
         br(),

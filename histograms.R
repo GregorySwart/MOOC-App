@@ -17,13 +17,17 @@ prependTab(inputId = "mooc_app",
       hr(),
       fluidRow(
         column(8, offset = 2, align = "center",
-          p(textlist$histograms_intro),
-          hr(),
+          p(textlist$histograms_intro)
         )
       ),
       fluidRow(
-        column(2, offset = 1,
-          selectInput("histvar", label = "please select a variable to display", 
+        column(10, offset = 1,
+          hr()
+        )
+      ),
+      fluidRow(
+        column(2, offset = 1, align = "center",
+          selectInput("histvar", label = "Select a variable to display", 
           choices = list("Trust" =        list("Trust in people" = "ppltrst",
                                                "Fairness of people" = "pplfair",
                                                "Helpfulness of people" = "pplhlp",
@@ -45,7 +49,7 @@ prependTab(inputId = "mooc_app",
                                                "Satisfaction with healthcare" = "stfhlth"),
                          "Other" =        list("Self placement on left-right scale" = "lrscale"))
           ),
-          selectInput("histdata", label = "Please select reference data frame",
+          selectInput("histdata", label = "Select country",
                       choices = list("Austria (AT)" = "AT",
                                      "Belgium (BE)" = "BE", 
                                      "Bulgaria (BG)" = "BG",
@@ -67,7 +71,7 @@ prependTab(inputId = "mooc_app",
                                      "Slovenia (SI)" = "SI")
           )
         ),
-        column(6,
+        column(8,
           plotOutput("svyhist")
         )
       ),
