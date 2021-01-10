@@ -52,6 +52,7 @@ prependTab(inputId = "mooc_app",
                      "Other" =        list("Self placement on left-right scale" = "lrscale")
                    )
                  ),
+                 textOutput("map_own_response")
           ),
           column(8,
             plotOutput("map", height = 600)

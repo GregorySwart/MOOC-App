@@ -79,7 +79,12 @@ function(input, output, session) {
                       actionButton(inputId = "end_trust", label = "Submit answers and continue"),
                       br(),
                       hr(),
-                      br()
+                      br(),
+                    br(),
+                    br(),
+                    br(),
+                    br(),
+                    br()
                  )
                )
             )
@@ -153,6 +158,11 @@ function(input, output, session) {
                                              actionButton(inputId = "end_immigration", label = "Submit answers and continue"),
                                              br(),
                                              hr(),
+                                             br(),
+                                             br(),
+                                             br(),
+                                             br(),
+                                             br(),
                                              br()
                                            ),
                                     )
@@ -233,6 +243,11 @@ function(input, output, session) {
                                              actionButton(inputId = "end_satisfaction", label = "Submit answers and continue"),
                                              br(),
                                              hr(),
+                                             br(),
+                                             br(),
+                                             br(),
+                                             br(),
+                                             br(),
                                              br()
                                       )
                                     ),
@@ -685,7 +700,14 @@ function(input, output, session) {
     hdata <- input$histdata
     score <- as.numeric(input[[var]])
     
-    ggplot(ess_data %>% subset(cntry %in% hdata)) +
+    data <- ess_data
+    
+    data$frprtpl <- (data$frprtpl - 1)
+    data$impcntr <- (3 - (data$impcntr - 1))
+    data$imsmetn <- (3 - (data$imsmetn - 1))
+    data$imdfetn <- (3 - (data$imdfetn - 1))
+    
+    ggplot(data %>% subset(cntry %in% hdata)) +
       geom_histogram(aes(x = .data[[var]]), binwidth = 0.25, center = 0, fill = "grey50", col = "red4", size = 1) +
       geom_vline(xintercept = score, col = "blue", lwd = 2) +
       scale_x_continuous(breaks = seq(0, 10, by = 1)) +
@@ -710,7 +732,9 @@ function(input, output, session) {
                          "stfeco"  ~ "Satisfaction with economy",
                          "stfedu"  ~ "Satisfaction with education system",
                          "stfhlth" ~ "Satisfaction with healthcare",
-                         "lrscale" ~ "Self placement on left-right scale"))
+                         "lrscale" ~ "Self placement on left-right scale")) +
+      ggtitle(variable_questions[[input$histvar]]) +
+      theme(plot.title = element_text(hjust = 0.5))
   }) # Histograms tab
   
   
@@ -899,12 +923,17 @@ function(input, output, session) {
       ylim(37,70) +
       geom_sf(data = world_trimmed, aes(fill = var)) +
       labs(fill = "Variable difference") +
-      scale_fill_gradient2(low = "darkblue", high = "red4") +
+      scale_fill_gradient2(high = "darkblue", low = "red4") +
       geom_sf_text(data = world_trimmed, aes(X, Y, label = var_raw), colour = "black") +
       theme(legend.position = c(0.93,0.5),
             axis.title = element_blank(),
             axis.ticks = element_blank(),
             axis.text = element_blank())
+  })
+  
+  
+  output$map_own_response <- renderText({
+    paste(sep = "", "Your answer to this question: ", as.character(input[[input$map_var]]))
   })
   
   

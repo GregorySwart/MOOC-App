@@ -9,9 +9,9 @@ variable_questions <- list(
   "imbgeco" = "\"Would you say it is generally bad or good for your country's economy that people come to live here from other countries? \n (0 = bad for the economy, 10 = good for the economy)\"",
   "imueclt" = "\"Would you say that your country's cultural life is generally undermined or enriched by people coming to live here from other countries? \n (0 = cultural life undermined, 10 = cultural life enriched)\"",
   "imwbcnt" = "\"Is your country made a worse or a better place to live by people coming to live here from other countries? \n (0 = Worse place to live, 10 = Better place to live)\"",
-  "impcntr" = "\"To what extent do you think your country should allow people from poorer countries outside of Europe to come and live here?\"",
-  "imsmetn" = "\"To what extent do you think your country should allow people of the same race or ethnic group as most inhabitants to come and live here?\"",
-  "imdfetn" = "\"To what extent do you think your country should allow people of a different race or ethnic group as most inhabitants to come and live here?\"",
+  "impcntr" = "\"To what extent do you think your country should allow people from poorer countries outside of Europe to come and live here? \n (0 = Allow none, 3 = Allow many to come and live here)  \"",
+  "imsmetn" = "\"To what extent do you think your country should allow people of the same race or ethnic group as most inhabitants to come and live here? \n (0 = Allow none, 3 = Allow many to come and live here)\"",
+  "imdfetn" = "\"To what extent do you think your country should allow people of a different race or ethnic group as most inhabitants to come and live here? \n (0 = Allow none, 3 = Allow many to come and live here)\"",
   
   "happy"   = "\"Taking all things together, how happy would you say you are? (0 = Extremely unhappy, 10 = Extremely happy)\"",
   "stflife" = "\"All things considered, how satisfied are you with your life as a whole nowadays? Please answer the slider to the left, \n where 0 means extremely dissatisfied and 10 means extremely satisfied.\"",
