@@ -4,11 +4,12 @@ function(input, output, session) {
   # Data load and cleanup #
   #=======================#
   
-  hardcode <- FALSE # set this to TRUE when testing to skip through the questionnaire
+  hardcode <- TRUE # set this to TRUE when testing to skip through the questionnaire
   
   source("libraries.R") # load in libraries
   source("texts.R")
   source("functions.R") # define %nin%, ess_selector, ess_slider functions
+  source("labels.R")
   
   #Import data
   ess_data <<- as.data.frame(read_spss("ess_data.sav"))
@@ -30,8 +31,6 @@ function(input, output, session) {
   removed_satisfaction <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
                             "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
-  #source("indicators.R")
-  
   ready <- c("Max", "Min", "EU", "HU", "SU", "PA")
   ready_var <- c("Max", "Min", "EU", "HU", "SU")
   
@@ -44,59 +43,48 @@ function(input, output, session) {
   # BUTTON: Remove intro and add trust
   {
     observeEvent(input$end_intro, once = TRUE, {
-      insertTab(inputId = "mooc_app", target = "data",
-                tab = {
-                  tabPanel(title = "Survey - Trust", value = "survey_trust", icon = icon("thumbs-up"),
-                           fluidPage(
-                             fluidRow(
-                               column(10, offset = 1, align = "center",
-                                      h1("Trust", align = "center"),
-                                      ess_selector(ID = "ppltrst", label = "1. Trust in people",
-                                                   choices = c("Please select..." = NA,0:10),
-                                                   selected = "Please select...",
-                                                   text = "Generally speaking, would you say that most people can be trusted, or that you can't 
-                            be too careful in dealing with people? Please tell us on a score of 0 to 10, where 0 
-                            means you can't be too careful and 10 means that most people can be trusted."),
-                                      ess_selector(ID = "pplfair", label = "2. Fairness of people",
-                                                   choices = c("Please select..." = NA,0:10),
-                                                   selected = "Please select...",
-                                                   text = "Do you think that most people would try to take advantage of you if they got the 
-                            chance, or would they try to be fair? Here 0 means people would try to take advantage of 
-                            you and 10 means most people try to be fair."),
-                                      ess_selector(ID = "pplhlp", label = "3. Helpfulness of people",
-                                                   choices = c("Please select..." = NA,0:10),
-                                                   selected = "Select...",
-                                                   text = "Would you say that most of the time people try to be helpful or that they are 
-                            mostly looking out for themselves? Here 0 means most people are just looking 
-                            out for themselves, while 10 means they are mostly helpful."),
-                                      ess_selector(ID = "trstprl", label = "4. Trust in parliament",
-                                                   choices = c("Please select..." = NA,0:10),
-                                                   selected = "Select...",
-                                                   text = "Please tell us on a score of 0-10 how much you personally trust 
-                            your country's parliament. 0 means you do not trust the institution at all, and 10 
-                            means you have complete trust."),
-                                      ess_selector(ID = "trstlgl", label = "5. Trust in legal system",
-                                                   choices = c("Please select..." = NA,0:10),
-                                                   selected = "Select...",
-                                                   text = "Please tell us on a score of 0-10 how much you personally trust 
-                          your country's legal system. 0 means you do not trust the institution at all, and 10 
-                          means you have complete trust."),
-                                      ess_selector(ID = "trstep", label = "6. Trust in European Parliament",
-                                                   choices = c("Please select..." = NA,0:10),
-                                                   selected = "Select...",
-                                                   text = "Please tell us on a score of 0-10 how much you personally trust 
-                          the European Parliament. 0 means you do not trust the institution at all, and 10 
-                          means you have complete trust."),
-                                      br(),
-                                      actionButton(inputId = "end_trust", label = "Submit answers and continue"),
-                                      br(),
-                                      hr(),
-                                      br()
-                               )
-                             )
-                           )
-                  )
-                } # survey_trust tab
+      insertTab(
+        inputId = "mooc_app", target = "data",
+          tab = {
+            tabPanel(title = "Survey - Trust", value = "survey_trust", icon = icon("thumbs-up"),
+              fluidPage(
+                fluidRow(
+                  column(10, offset = 1, align = "center",
+                    h1("Trust", align = "center"),
+                    ess_selector(ID = "ppltrst", label = "1. Trust in people",
+                     choices = c("Please select..." = NA,0:10),
+                     selected = "Please select...",
+                    text = "Generally speaking, would you say that most people can be trusted, or that you can't be too careful in dealing with people? Please tell us on a score of 0 to 10, where 0 means you can't be too careful and 10 means that most people can be trusted."),
+                    ess_selector(ID = "pplfair", label = "2. Fairness of people",
+                      choices = c("Please select..." = NA,0:10),
+                      selected = "Please select...",
+                      text = "Do you think that most people would try to take advantage of you if they got the chance, or would they try to be fair? Here 0 means people would try to take advantage of you and 10 means most people try to be fair."),
+                      ess_selector(ID = "pplhlp", label = "3. Helpfulness of people",
+                        choices = c("Please select..." = NA,0:10),
+                        selected = "Select...",
+                        text = "Would you say that most of the time people try to be helpful or that they are mostly looking out for themselves? Here 0 means most people are just looking out for themselves, while 10 means they are mostly helpful."),
+                      ess_selector(ID = "trstprl", label = "4. Trust in parliament",
+                        choices = c("Please select..." = NA,0:10),
+                        selected = "Select...",
+                        text = "Please tell us on a score of 0-10 how much you personally trust your country's parliament. 0 means you do not trust the institution at all, and 10 means you have complete trust."),
+                      ess_selector(ID = "trstlgl", label = "5. Trust in legal system",
+                        choices = c("Please select..." = NA,0:10),
+                        selected = "Select...",
+                        text = "Please tell us on a score of 0-10 how much you personally trust your country's legal system. 0 means you do not trust the institution at all, and 10 means you have complete trust."),
+                      ess_selector(ID = "trstep", label = "6. Trust in European Parliament",
+                       choices = c("Please select..." = NA,0:10),
+                       selected = "Select...",
+                       text = "Please tell us on a score of 0-10 how much you personally trust the European Parliament. 0 means you do not trust the institution at all, and 10 means you have complete trust."),
+                      br(),
+                      actionButton(inputId = "end_trust", label = "Submit answers and continue"),
+                      br(),
+                      hr(),
+                      br()
+                 )
+               )
+            )
+          )
+        } # survey_trust tab
       )
       removeTab(inputId = "mooc_app",
                 target = "introduction",
@@ -124,20 +112,15 @@ function(input, output, session) {
                                              ess_selector(ID = "imbgeco", label = "7. Effect on economy",
                                                           choices = c("Please select..." = NA,0:10),
                                                           selected = "Please select...",
-                                                          text = "Would you say it is generally bad or good for your country's economy that 
-                         people come to live here from other countries? (0 = bad for the economy, 10 = good 
-                         for the economy)"),
+                                                          text = "Would you say it is generally bad or good for your country's economy that people come to live here from other countries? (0 = bad for the economy, 10 = good for the economy)"),
                                              ess_selector(ID = "imueclt", label = "8.Effect on culture",
                                                           choices = c("Please select..." = NA,0:10),
                                                           selected = "Please select...",
-                                                          text = "Would you say that your country's cultural life is generally undermined or 
-                         enriched by people coming to live here from other countries? (0 = cultural life 
-                         undermined, 10 = cultural life enriched)"),
+                                                          text = "Would you say that your country's cultural life is generally undermined or enriched by people coming to live here from other countries? (0 = cultural life undermined, 10 = cultural life enriched)"),
                                              ess_selector(ID = "imwbcnt", label = "9. Effect on country as a whole",
                                                           choices = c("Please select..." = NA,0:10),
                                                           selected = "Please select...",
-                                                          text = "Is your country made a worse or a better place to live by people coming to 
-                         live here from other countries? (0 = Worse place to live, 10 = Better place to live)"),
+                                                          text = "Is your country made a worse or a better place to live by people coming to live here from other countries? (0 = Worse place to live, 10 = Better place to live)"),
                                              
                                              ess_selector(ID = "impcntr",
                                                           label = "10. From poorer countries outside of Europe",
@@ -146,8 +129,7 @@ function(input, output, session) {
                                                                       "Allow some (2)" = 2,
                                                                       "Allow a few (1)" = 1,
                                                                       "Allow none (0)" = 0),
-                                                          text = "To what extent do you think your country should allow people from poorer countries 
-                       outside of Europe to come and live here?",
+                                                          text = "To what extent do you think your country should allow people from poorer countries outside of Europe to come and live here?",
                                                           selected = "Please Select"),
                                              ess_selector(ID = "imsmetn",
                                                           label = "11. Immigrants of the same race",
@@ -156,8 +138,7 @@ function(input, output, session) {
                                                                       "Allow some (2)" = 2,
                                                                       "Allow a few (1)" = 1,
                                                                       "Allow none (0)" = 0),
-                                                          text = "To what extent do you think your country should allow people of the same race or 
-                       ethnic group as most inhabitants to come and live here?",
+                                                          text = "To what extent do you think your country should allow people of the same race or ethnic group as most inhabitants to come and live here?",
                                                           selected = "Please select"),
                                              ess_selector(ID = "imdfetn",
                                                           label = "12. Immigrants of a different race",
@@ -166,8 +147,7 @@ function(input, output, session) {
                                                                       "Allow some (2)" = 2,
                                                                       "Allow a few (1)" = 1,
                                                                       "Allow none (0)" = 0),
-                                                          text = "To what extent do you think your country should allow people of a different race or 
-                       ethnic group as most inhabitants to come and live here?",
+                                                          text = "To what extent do you think your country should allow people of a different race or ethnic group as most inhabitants to come and live here?",
                                                           selected = "Please select..."),
                                              br(),
                                              actionButton(inputId = "end_immigration", label = "Submit answers and continue"),
@@ -224,40 +204,31 @@ function(input, output, session) {
                                              ess_selector(ID = "happy", label = "13. General happiness",
                                                           choices = c("Please select..." = NA,0:10),
                                                           selected = "Please select...",
-                                                          text = "Taking all things together, how happy would you say you are? 
-                       (0 = Extremely unhappy, 10 = Extremely happy)"),
+                                                          text = "Taking all things together, how happy would you say you are? (0 = Extremely unhappy, 10 = Extremely happy)"),
                                              ess_selector(ID = "stflife", label = "14. Satisfaction with life in general",
                                                           choices = c("Please select..." = NA,0:10),
                                                           selected = "Please select...",
-                                                          text = "All things considered, how satisfied are you with your life as a whole nowadays? 
-                       Please answer the slider to the left, where 0 means extremely dissatisfied and 10 means 
-                       extremely satisfied."),
+                                                          text = "All things considered, how satisfied are you with your life as a whole nowadays? Please answer the slider to the left, where 0 means extremely dissatisfied and 10 means extremely satisfied."),
                                              ess_selector(ID = "frprtpl", label = "15. Political fairness",
                                                           choices = c("Please select..." = NA,0:5),
                                                           selected = "Please select...",
-                                                          text = "How much would you say that the political system in country ensures that 
-                       everyone has a fair chance to participate in politics? 
-                       (0 = Not at all, 4 = A great deal)"),
+                                                          text = "How much would you say that the political system in country ensures that everyone has a fair chance to participate in politics? (0 = Not at all, 4 = A great deal)"),
                                              ess_selector(ID = "stfdem", label = "16. Satisfaction with democracy",
                                                           choices = c("Please select..." = NA,0:10),
                                                           selected = "Please select...",
-                                                          text = "On the whole, how satisfied are you with the way democracy works in your country? 
-                       (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
+                                                          text = "On the whole, how satisfied are you with the way democracy works in your country? (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
                                              ess_selector(ID = "stfeco", label = "17. Satisfaction with economy",
                                                           choices = c("Please select..." = NA,0:10),
                                                           selected = "Please select...",
-                                                          text = "On the whole how satisfied are you with the present state of the economy in your 
-                       country? (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
+                                                          text = "On the whole how satisfied are you with the present state of the economy in your country? (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
                                              ess_selector(ID = "stfedu", label = "18. Satisfaction with education",
                                                           choices = c("Please select..." = NA,0:10),
                                                           selected = "Please select...",
-                                                          text = "On the whole how satisfied are you with the present state of the education system 
-                       in your country? (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
+                                                          text = "On the whole how satisfied are you with the present state of the education system in your country? (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
                                              ess_selector(ID = "stfhlth", label = "19. Satisfaction with healthcare",
                                                           choices = c("Please select..." = NA,0:10),
                                                           selected = "Please select...",
-                                                          text = "On the whole how satisfied are you with the present state of the healthcare system 
-                       in your country? (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
+                                                          text = "On the whole how satisfied are you with the present state of the healthcare system in your country? (0 = Extremely dissatisfied, 10 = Extremely satisfied)"),
                                              br(),
                                              actionButton(inputId = "end_satisfaction", label = "Submit answers and continue"),
                                              br(),
@@ -298,8 +269,7 @@ function(input, output, session) {
                                        ess_selector(ID = "lrscale", label = "20. Placement on left-right scale",
                                                     choices = c("Please select..." = NA,0:10),
                                                     selected = "Please select...",
-                                                    text = "In politics people sometimes talk of 'left' and 'right'. Using this slider, where 
-                       would you place yourself on this scale, where 0 means the left and 10 means the right?"),
+                                                    text = "In politics people sometimes talk of 'left' and 'right'. Using this slider, where would you place yourself on this scale, where 0 means the left and 10 means the right?"),
                                        hr(),
                                        br(),
                                        br()
@@ -857,6 +827,46 @@ function(input, output, session) {
     p1
   }) # Circular barplots tab
   
+  output$country_comparison_plot <- renderPlot({
+    variable <- input$country_comparison_variable
+    
+    data <- mean_data_long[which(mean_data_long$cntry %nin% c("PA", "EU")),]
+    data$cntry <- as.character(data$cntry)
+    
+    ggplot(data = subset(data, var == variable), mapping = aes(x = reorder(cntry, value), y = value, fill = cntry)) +
+      geom_col() + 
+      geom_flag(y = 0, aes(country = tolower(cntry)), size = 10) +
+      scale_fill_manual(values = list("AT" = "#646C64",
+                                      "BE" = "#74C19C", 
+                                      "BG" = "#715865",
+                                      "CH" = "#9D8572",
+                                      "CY" = "#E6C65A",
+                                      "CZ" = "#B06E20",
+                                      "DE" = "#B4B4B4",
+                                      "EE" = "#CF765E",
+                                      "FI" = "#824914",
+                                      "FR" = "#0F1BBB",
+                                      "GB" = "#D20404",
+                                      "HU" = "#BB4646",
+                                      "IE" = "#067F02",
+                                      "IT" = "#84A259",
+                                      "NL" = "#F56414",
+                                      "NO" = "#AAAAD2",
+                                      "PL" = "#961717",
+                                      "RS" = "#71623D",
+                                      "SI" = "#93985E")) +
+      
+      scale_y_continuous(
+        breaks = seq(0, variable_limits[[input$country_comparison_variable]][2], by = 1),
+        limits = variable_limits[[input$country_comparison_variable]]) +
+      theme(legend.position = "none",
+            plot.title = element_text(hjust = 0.5)) +
+      ggtitle(variable_questions[[input$country_comparison_variable]]) +
+      xlab("Country") +
+      ylab("Mean value of responses") 
+    # +
+    #   ylim(variable_limits[[input$country_comparison_variable]])
+  })
   
   output$downloadData <- downloadHandler(
     filename = function() {

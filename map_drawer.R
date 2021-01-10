@@ -1,5 +1,5 @@
 prependTab(inputId = "mooc_app",
-    tab = tabPanel(title = "Map Drawer", value = "map_drawer",
+    tab = tabPanel(title = "Map Drawer", value = "map_drawer", icon = icon("globe-europe"),
       fluidPage(
         fluidRow(
           column(1, offset = 3, align = "center",
