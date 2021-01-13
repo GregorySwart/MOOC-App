@@ -13,26 +13,38 @@ function(input, output, session) {
   
   #Import data
   ess_data <<- as.data.frame(read_spss("ess_data.sav"))
-  countries <<- ess_data$cntry %>% unique() %>% values2labels() %>% unclass()
+  ess_data_new <<- as.data.frame(read_spss("ess_data_new.sav"))
+  
+  countries <<- ess_data_new$cntry %>% unique() %>% values2labels() %>% unclass()
   
   variables <<- colnames(ess_data)[5:25]
   
   source("median_data.R")
   
-  removed <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
-               "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
+  removed <- c("Own response", c(gsub(" ", "", get_values(ess_data_new$cntry), fixed = TRUE)))
+               
+  # c("AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI"))
   
-  removed_trust <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
-                     "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
+  removed_trust <- c("Own response", c(gsub(" ", "", get_values(ess_data_new$cntry), fixed = TRUE)))
+                     
+  # c("AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI"))
   
-  removed_immigration <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
-                           "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
+  removed_immigration <- removed
   
-  removed_satisfaction <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", 
-                            "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
+  # removed_immigration <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
+  
+  removed_satisfaction <- removed
+  
+  # removed_satisfaction <- c("Own response", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "EE", "FI", "FR", "GB", "HU", "IE", "IT", "NL", "NO", "PL", "RS", "SI")
   
   ready <- c("Max", "Min", "EU", "HU", "SU", "PA")
   ready_var <- c("Max", "Min", "EU", "HU", "SU")
+  
+
+
+  
+  
+  
   
   #Clean data
   
@@ -429,7 +441,7 @@ function(input, output, session) {
                bty = "o", fill=colors_in, cex = 0.9)
       })
     })
-  } # Overview
+  } # Radar Overview Plot
   
   
   {
@@ -515,7 +527,7 @@ function(input, output, session) {
                cex = 0.9)
       })
     })
-  } # Trust
+  } # Radar Trust Plot
   
   
   {
@@ -605,7 +617,7 @@ function(input, output, session) {
                cex = 0.9)
       })
     })
-  } # Immigration
+  } # Radar Immigration Plot
   
   
   {
@@ -692,7 +704,7 @@ function(input, output, session) {
                cex = 0.9)
       })
     })
-  } # Satisfaction
+  } # Radar Satisfaction Plot
   
   
   output$svyhist <- renderPlot({
@@ -708,8 +720,8 @@ function(input, output, session) {
     data$imdfetn <- (3 - (data$imdfetn - 1))
     
     ggplot(data %>% subset(cntry %in% hdata)) +
-      geom_histogram(aes(x = .data[[var]]), binwidth = 0.25, center = 0, fill = "grey50", col = "red4", size = 1) +
-      geom_vline(xintercept = score, col = "blue", lwd = 2) +
+      geom_histogram(aes(x = .data[[var]]), binwidth = 1, center = 0, fill = "grey80", size = 1, col = "grey25") +
+      geom_vline(xintercept = score, col = "#B51A62", lwd = 4) +
       scale_x_continuous(breaks = seq(0, 10, by = 1)) +
       ylab("Number of responses") + 
       xlab(expss::recode(var, 
@@ -823,7 +835,7 @@ function(input, output, session) {
     my_label_data[19,"value"] <- max(my_data1[which(my_data1$var == "lrscale"),3])
     
     p1 <- ggplot(my_data1, aes(x=as.factor(id), y=value, fill = source, color = group)) +
-      geom_bar(stat="identity", alpha = 0.7, width=0.6, position = "dodge", size = 1.1) +
+      geom_bar(stat="identity", alpha = 0.7, width=0.6, position = "dodge", size = 0.75) +
       # Add a val=100/75/50/25 lines. I do it at the beginning to make sure barplots are OVER it.
       geom_segment(data=grid_data, aes(x = end, y = 8, xend = start, yend = 8), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
       geom_segment(data=grid_data, aes(x = end, y = 6, xend = start, yend = 6), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
@@ -835,7 +847,7 @@ function(input, output, session) {
       ylim(-5,11) +
       theme_minimal() +
       theme(
-        legend.position = c(0.1,0.8),
+        legend.position = "right",
         axis.text = element_blank(),
         axis.title = element_blank(),
         panel.grid = element_blank(),
@@ -845,9 +857,14 @@ function(input, output, session) {
       coord_polar(start = 0) +
       geom_text(data=my_label_data, aes(x=id, y=value+0.5, label=var, hjust=hjust), color="black", 
                 fontface="bold",alpha=0.6, size=4, angle= my_label_data$angle, inherit.aes = FALSE ) +
-      geom_segment(data=base_data, aes(x = start, y = -1, xend = end, yend = -1), colour = "black", 
-                   alpha=0.8, size=1.5 , inherit.aes = FALSE ) +
-      labs(fill = "Answer source", col = "Variable grouping")
+      geom_segment(data=base_data[1,], aes(x = start, y = -1, xend = end, yend = -1), colour = "#B51A62", 
+                   alpha=0.8, size=2.5 , inherit.aes = FALSE ) +
+      geom_segment(data=base_data[2,], aes(x = start, y = -1, xend = end, yend = -1), colour = "#20655F", 
+                   alpha=0.8, size=2.5 , inherit.aes = FALSE ) +
+      geom_segment(data=base_data[3,], aes(x = start, y = -1, xend = end, yend = -1), colour = "#1A2634", 
+                   alpha=0.8, size=2.5 , inherit.aes = FALSE ) +
+      labs(fill = "Answer source", col = "Variable grouping") +
+      scale_color_manual(name = "Variable group", values = c("#B51A62", "#20655F", "#1A2634"))
     
     p1
   }) # Circular barplots tab
@@ -862,26 +879,6 @@ function(input, output, session) {
     ggplot(data = subset(data, var == variable), mapping = aes(x = reorder(cntry, value), y = value, fill = cntry)) +
       geom_col() + 
       geom_flag(y = 0, aes(country = tolower(cntry)), size = 10) +
-      scale_fill_manual(values = list("AT" = "#646C64",
-                                      "BE" = "#74C19C", 
-                                      "BG" = "#715865",
-                                      "CH" = "#9D8572",
-                                      "CY" = "#E6C65A",
-                                      "CZ" = "#B06E20",
-                                      "DE" = "#B4B4B4",
-                                      "EE" = "#CF765E",
-                                      "FI" = "#824914",
-                                      "FR" = "#0F1BBB",
-                                      "GB" = "#D20404",
-                                      "HU" = "#BB4646",
-                                      "IE" = "#067F02",
-                                      "IT" = "#84A259",
-                                      "NL" = "#F56414",
-                                      "NO" = "#AAAAD2",
-                                      "PL" = "#961717",
-                                      "RS" = "#71623D",
-                                      "SI" = "#93985E")) +
-      
       scale_y_continuous(
         breaks = seq(0, variable_limits[[input$country_comparison_variable]][2], by = 1),
         limits = variable_limits[[input$country_comparison_variable]]) +
@@ -889,33 +886,24 @@ function(input, output, session) {
             plot.title = element_text(hjust = 0.5)) +
       ggtitle(variable_questions[[input$country_comparison_variable]]) +
       xlab("Country") +
-      ylab("Mean value of responses") 
-    # +
-    #   ylim(variable_limits[[input$country_comparison_variable]])
+      ylab("Mean value of responses")
   }) # Country comparison column plot
   
   
   output$map <- renderPlot({
     world <- ne_countries(scale = "medium", returnclass = "sf")
-    
     world_trimmed <- world %>% subset(iso_a2 %in% countries)
+    map_data1 <- mean_data_long %>% subset(cntry %in% countries) %>% subset(var == input$map_var)
     
-    world_trimmed$var <- runif(19,0,10)
+    world_trimmed$var <- (map_data1$value - as.numeric(input[[input$map_var]])) %>% round(2)
     
-    data <- mean_data_long %>% subset(cntry %in% countries) %>% subset(var == input$map_var)
-    
-    world_trimmed$var <- (data$value - as.numeric(input[[input$map_var]])) %>% round(2)
-    world_trimmed$var_raw <- data$value %>% round(2)
-    
+    world_trimmed$var_raw <- map_data1$value %>% round(2)
     points <- sf::st_point_on_surface(world_trimmed)
     points_coords <- as.data.frame(sf::st_coordinates(points))
     points_coords$value <- world_trimmed$var
-    
+
     world_trimmed$X <- points_coords$X
     world_trimmed$Y <- points_coords$Y
-    
-    world_trimmed$X[[which(world_trimmed$iso_a2 == "NO")]] <- 20
-    world_trimmed$Y[[which(world_trimmed$iso_a2 == "NO")]] <- 61
     
     ggplot() +
       geom_sf(data = world,fill = "grey40") +

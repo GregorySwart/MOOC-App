@@ -1,10 +1,6 @@
-variables <- c("agea", "gndr", "eisced", "ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", 
-               "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", 
-               "stfdem","stfeco", "stfedu", "stfhlth", "lrscale")
+variables <- c("agea", "gndr", "eisced", "ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", "stfdem","stfeco", "stfedu", "stfhlth", "lrscale")
 
-stat_variables <- c("ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", 
-                    "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", 
-                    "stfdem","stfeco", "stfedu", "stfhlth", "lrscale")
+stat_variables <- c("ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", "trstlgl", "imbgeco", "imueclt", "imwbcnt", "impcntr","imsmetn", "imdfetn","happy", "stflife","frprtpl", "stfdem","stfeco", "stfedu", "stfhlth", "lrscale")
 
 trust_variables <- c("ppltrst", "pplfair", "pplhlp", "trstprl", "trstep", "trstlgl")
 
@@ -25,7 +21,7 @@ for (i in countries){
   mean_data[i,] <- rep(0,23)
 }
 
-clean_data <- ess_data %>% na.omit()
+clean_data <- ess_data_new %>% na.omit()
 for (i in 1:23){
   mean_data["EU",i] <- weighted.mean(unlist(clean_data[variables[i]]), clean_data$dweight)
   for (j in countries){
@@ -49,7 +45,7 @@ mean_data$imsmetn <- mean_data$imsmetn-1
 mean_data$imdfetn <- mean_data$imdfetn-1
 mean_data$impcntr <- mean_data$impcntr-1
 
-mean_data["PA",] <- rep(0,21)
+mean_data["PA",] <- rep(0,20)
 
 mean_data$cntry <- rownames(mean_data)
 
@@ -57,7 +53,7 @@ dummy <- mean_data[-c(1,2),]
 mean_data_long <- gather(dummy, key = var, value = value, - cntry)
 mean_data_long$cntry <- as.factor(mean_data_long$cntry)
 mean_data_long$var <- as.factor(mean_data_long$var)
-mean_data_long$id <- rep(1:20, each = 21)
+mean_data_long$id <- rep(1:20, each = 31)
 
 colnames(mean_data) <- c("Trust in\n people",
                          "Fairness of\n people",
@@ -83,9 +79,9 @@ colnames(mean_data) <- c("Trust in\n people",
                          )
 
 rownames(mean_data)[3] <- "All countries"
-rownames(mean_data)[4:22] <- c("Austria", "Belgium", "Bulgaria", "Switzerland", "Cyprus", "Czechia", "Germany", "Estonia",
-                               "Finland", "France", "United Kingdom", "Hungary", "Ireland", "Italy",
-                               "Netherlands", "Norway", "Poland", "Serbia", "Slovenia")
-rownames(mean_data)[23] <- "Own response"
+rownames(mean_data)[4:32] <- get_labels(ess_data_new$cntry)
+
+#c("Austria", "Belgium", "Bulgaria", "Switzerland", "Cyprus", "Czechia", "Germany", "Estonia", "Finland", "France", "United Kingdom", "Hungary", "Ireland", "Italy", "Netherlands", "Norway", "Poland", "Serbia", "Slovenia")
+rownames(mean_data)[33] <- "Own response"
 mean_data["Own response", "cntry"] <- "Own response"
 rm("i","j")
