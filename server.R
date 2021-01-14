@@ -344,6 +344,22 @@ function(input, output, session) {
                          selected = "radar_charts")
         removeTab(inputId = "mooc_app",
                   target = "survey_lrscale")
+        shinyalert(
+          title = "Possible latency",
+          text = "It is possible that your input data has not yet been fully processed, and as a result the radar charts will display your answers as all zeros. If this happens, please wait a few seconds and refresh the plot.",
+          size = "m",
+          closeOnEsc = TRUE,
+          closeOnClickOutside = TRUE,
+          html = FALSE,
+          type = "warning",
+          showConfirmButton = TRUE,
+          showCancelButton = FALSE,
+          confirmButtonText = "OK",
+          confirmButtonCol = "#808080",
+          timer = 0,
+          imageUrl = "",
+          animation = FALSE
+        )
         for (i in 1:length(stat_variables)){
           mean_data["Own response", i] <<- as.numeric(input[[stat_variables[i]]])
         }
@@ -712,7 +728,7 @@ function(input, output, session) {
     hdata <- input$histdata
     score <- as.numeric(input[[var]])
     
-    data <- ess_data
+    data <- ess_data_new
     
     data$frprtpl <- (data$frprtpl - 1)
     data$impcntr <- (3 - (data$impcntr - 1))
@@ -967,6 +983,10 @@ function(input, output, session) {
       write.csv(ess_data, file)
     }
   )
+  
+
+
+
   
   # Left and Right Jump Buttons
   {

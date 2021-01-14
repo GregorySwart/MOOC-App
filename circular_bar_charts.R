@@ -59,7 +59,15 @@ prependTab(inputId = "mooc_app",
           )
         ),
         column(8,
-          plotOutput("svybar", height = 600)
+          plotOutput("svybar", height = 700)
+        )
+      ),
+      fluidRow(
+        column(10, offset = 1,
+          hr(),
+          br(),
+          br(),
+          br()
         )
       )
     )
