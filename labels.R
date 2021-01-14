@@ -46,3 +46,24 @@ variable_limits <- list(
   stfhlth = c(0,10),
   lrscale = c(0,10)
 )
+
+variable_labels <-  c("Immigration perception (economic)",
+                      "Immigration perception (cultural)",
+                      "Immigration perception (better/worse)",
+                      "Immigration attitude\n(poorer countries outside of Europe)",
+                      "Immigration attitude\n(same race)",
+                      "Immigration attitude\n(different race)",
+                      "General happiness",
+                      "Satisfaction with life",
+                      "Fair chance to participate\nin politics",
+                      "Satisfaction with democracy",
+                      "Satisfaction with economy",
+                      "Satisfaction with education system",
+                      "Satisfaction with healthcare",
+                      "Self placement on left-right scale",
+                      "Trust in people" ,
+                      "Fairness\nof people",
+                      "Helpfulness\nof people",
+                      "Trust in parliament",
+                      "Trust in EP",
+                      "Trust in legal system")

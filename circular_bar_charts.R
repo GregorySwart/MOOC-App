@@ -59,7 +59,7 @@ prependTab(inputId = "mooc_app",
           )
         ),
         column(8,
-          plotOutput("svybar", height = 650)
+          plotOutput("svybar", height = 600)
         )
       )
     )

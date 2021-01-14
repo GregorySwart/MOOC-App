@@ -834,6 +834,27 @@ function(input, output, session) {
     
     my_label_data[19,"value"] <- max(my_data1[which(my_data1$var == "lrscale"),3])
     
+    
+    segments <- data.frame(matrix(nrow = 20, ncol = 4))
+    colnames(segments) <- c("x","y","xend","yend")
+    segments$x <- c(1:6,12:19,25:30)
+    segments$y <- 0
+    segments$xend <- segments$x
+    segments$yend <- 10
+    segments[1,"yend"] <- 10.5
+    segments[13,"yend"] <- 10.5
+    
+    labels <- data.frame(matrix(nrow = 20, ncol = 3))
+    colnames(labels) <- c("x","y","label")
+    labels$x <- segments$x
+    labels$y <- 10.25
+    labels$label <- c(variable_labels)
+    labels$just <- c(rep(0,20))
+    labels$just[14:20] <- 1
+    labels[1,"y"] <- 11
+    labels[13,"y"] <- 11
+    
+    
     p1 <- ggplot(my_data1, aes(x=as.factor(id), y=value, fill = source, color = group)) +
       geom_bar(stat="identity", alpha = 0.7, width=0.6, position = "dodge", size = 0.75) +
       # Add a val=100/75/50/25 lines. I do it at the beginning to make sure barplots are OVER it.
@@ -844,10 +865,10 @@ function(input, output, session) {
       
       # Add text showing the value of each 100/75/50/25 lines
       annotate("text", x = rep(max(my_data$id),4), y = c(2, 4, 6, 8), label = c("2", "4", "6", "8") , color="grey20", size=3 , angle=0, fontface="bold", hjust=1) +
-      ylim(-5,11) +
+      ylim(-5,11.5) +
       theme_minimal() +
       theme(
-        legend.position = "right",
+        legend.position = c(0.95,0.52),
         axis.text = element_blank(),
         axis.title = element_blank(),
         panel.grid = element_blank(),
@@ -855,8 +876,8 @@ function(input, output, session) {
         legend.title = 
       ) +
       coord_polar(start = 0) +
-      geom_text(data=my_label_data, aes(x=id, y=value+0.5, label=var, hjust=hjust), color="black", 
-                fontface="bold",alpha=0.6, size=4, angle= my_label_data$angle, inherit.aes = FALSE ) +
+      # geom_text(data=my_label_data, aes(x=id, y=value+0.5, label=var, hjust=hjust), color="black", 
+      #           fontface="bold",alpha=0.6, size=4, angle= my_label_data$angle, inherit.aes = FALSE ) +
       geom_segment(data=base_data[1,], aes(x = start, y = -1, xend = end, yend = -1), colour = "#B51A62", 
                    alpha=0.8, size=2.5 , inherit.aes = FALSE ) +
       geom_segment(data=base_data[2,], aes(x = start, y = -1, xend = end, yend = -1), colour = "#20655F", 
@@ -864,21 +885,31 @@ function(input, output, session) {
       geom_segment(data=base_data[3,], aes(x = start, y = -1, xend = end, yend = -1), colour = "#1A2634", 
                    alpha=0.8, size=2.5 , inherit.aes = FALSE ) +
       labs(fill = "Answer source", col = "Variable grouping") +
-      scale_color_manual(name = "Variable group", values = c("#B51A62", "#20655F", "#1A2634"))
+      scale_color_manual(name = "Variable group", values = c("#B51A62", "#20655F", "#1A2634")) +
+      
+      geom_segment(data = segments, aes(x=x,y=y,xend=xend,yend=yend), inherit.aes = FALSE) +
+      geom_text(data = labels, aes(x = x, y = y, label = label, hjust = just), inherit.aes = FALSE, lineheight = 0.8)
+      
+      
     
     p1
   }) # Circular barplots tab
   
   
   output$country_comparison_plot <- renderPlot({
+    # input <- list() # For testing, otherwise keep these lines as comments
+    # input$country_comparison_variable <- "ppltrst"
+    
     variable <- input$country_comparison_variable
     
     data <- mean_data_long[which(mean_data_long$cntry %nin% c("PA", "EU")),]
     data$cntry <- as.character(data$cntry)
     
-    ggplot(data = subset(data, var == variable), mapping = aes(x = reorder(cntry, value), y = value, fill = cntry)) +
-      geom_col() + 
+    ggplot(data = subset(data, var == variable), mapping = aes(x = reorder(cntry, value), y = value, fill = value)) +
+      geom_col(width = 0.7) + 
       geom_flag(y = 0, aes(country = tolower(cntry)), size = 10) +
+      geom_text(mapping = aes(x = cntry, y = (value + 0.25), label = round(value,2))) +
+      scale_fill_gradient() +
       scale_y_continuous(
         breaks = seq(0, variable_limits[[input$country_comparison_variable]][2], by = 1),
         limits = variable_limits[[input$country_comparison_variable]]) +
@@ -887,6 +918,7 @@ function(input, output, session) {
       ggtitle(variable_questions[[input$country_comparison_variable]]) +
       xlab("Country") +
       ylab("Mean value of responses")
+      
   }) # Country comparison column plot
   
   
@@ -916,7 +948,9 @@ function(input, output, session) {
       theme(legend.position = c(0.93,0.5),
             axis.title = element_blank(),
             axis.ticks = element_blank(),
-            axis.text = element_blank())
+            axis.text = element_blank(),
+            plot.title = element_text(hjust = 0.5)) +
+      ggtitle(variable_questions[[input$country_comparison_variable]])
   })
   
   
